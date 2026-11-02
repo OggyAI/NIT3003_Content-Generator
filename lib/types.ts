@@ -134,7 +134,11 @@ export type GenerateRequest = {
 
 export type GenerateResponse =
   | { contentId: string; title: string; body: string; generationMs: number }
-  | { error: 'profile_incomplete' | 'generation_failed' | 'invalid_request' | 'unauthorised' };
+  | {
+      error: 'profile_incomplete' | 'generation_failed' | 'save_failed' | 'invalid_request' | 'unauthorised';
+      message?: string;
+      missing?: string[];
+    };
 
 export type AnalyseRequest = {
   contentId: string;

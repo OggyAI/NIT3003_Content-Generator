@@ -29,6 +29,7 @@ Progress report due Fri 6 Nov 2026, 11:59 pm: diary plus a live demo of 80% comp
 - `proxy.ts` already refreshes the session and redirects logged-out users from protected pages to `/login?next=<path>`.
 
 ## Database contract (Oggy owns `supabase/schema.sql` — don't rename tables/columns without asking)
+**Never re-run `schema.sql` on the live project — it deletes all data.** Schema changes go in new files under `supabase/migrations/`.
 All ids are uuid; every table has `created_at`; RLS is on everywhere: a user can only read/write rows of their own business (`business_profile.owner_id = auth.uid()`). You never need to filter by user yourself for security, but you must still supply `business_id` on inserts (use `getMyBusinessId()`).
 - `business_profile`: id, owner_id (unique), business_name, industry, description, updated_at — created automatically at sign-up from user metadata `business_name`. Users can't delete it.
 - `brand_voice`: id, business_id (unique), voice ∈ professional | friendly | casual | persuasive, updated_at
@@ -41,7 +42,7 @@ For one-per-business tables (brand_voice, target_audience) save with `.upsert({.
 A profile is "complete" when business_name, industry, a brand_voice row and a target_audience description all exist.
 
 ## API contract
-- `POST /api/generate` `{contentType, platform?, request, keywords?}` → 200 `{contentId, title, body, generationMs}` | 400 `{error:"profile_incomplete"}` | 503 `{error:"generation_failed"}`. On failure the page keeps the user's typed request (NFR-05).
+- `POST /api/generate` `{contentType, platform?, request, keywords?}` → 200 `{contentId, title, body, generationMs}` | 400 `{error:"invalid_request", message}` or `{error:"profile_incomplete", missing:[...]}` | 401 `{error:"unauthorised"}` | 503 `{error:"generation_failed"}` | 500 `{error:"save_failed"}`. Implemented in `app/api/generate/route.ts`; profile loading is shared in `lib/business-context.ts`. On failure the page keeps the user's typed request (NFR-05).
 - `POST /api/analyse` `{contentId, analysisType: 'seo'|'tone'|'both'}` → 200 `{seoScore, keywordStats, toneMatch, detectedTone, suggestion}`
 
 ## Folder ownership (avoids merge conflicts)
