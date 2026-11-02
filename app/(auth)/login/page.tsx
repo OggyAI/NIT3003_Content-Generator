@@ -1,9 +1,12 @@
-// Owner: Nicolas — FR-02 login (Figure 1.1). Placeholder until built.
-export default function LoginPage() {
-  return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold">Login</h1>
-      <p>Placeholder — Nicolas is building this (FR-02, Figure 1.1).</p>
-    </main>
-  );
+import LoginForm from "./LoginForm";
+
+// Reads ?next=/somewhere from the address (set by proxy.ts when a logged-out
+// user tries to open a protected page) and passes it to the form.
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+  return <LoginForm next={next ?? "/dashboard"} />;
 }
