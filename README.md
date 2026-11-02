@@ -46,6 +46,7 @@ Then open a pull request into `main` on GitHub. Keep pull requests small and onl
 |---|---|---|
 | `supabase/schema.sql` | All tables, sign-up trigger, row-level security | Oggy |
 | `supabase/tests/rls_isolation_test.sql` | Proves one business can't see another's data | Oggy |
+| `supabase/migrations/*.sql` | Database changes after first setup — run each once, in number order | Oggy |
 | `lib/supabase/client.ts`, `server.ts` | Ready-made Supabase clients | Oggy |
 | `lib/types.ts` | Table and API types | Oggy |
 | `proxy.ts` | Session refresh + protected routes (Next 16's name for middleware) | Nicolas |
@@ -73,7 +74,7 @@ Invite Nicolas, Harry and Kerem as collaborators (Settings → Collaborators). O
 
 ### 2. Supabase
 1. Create a project at supabase.com (region: Sydney).
-2. **SQL Editor** → paste `supabase/schema.sql` → Run.
+2. **SQL Editor** → paste `supabase/schema.sql` → Run. (First-time setup only: re-running it deletes all data. Later changes go in `supabase/migrations/`.)
 3. **SQL Editor** → paste `supabase/tests/rls_isolation_test.sql` → Run. Every row should show `pass = true`. Screenshot it for the test plan.
 4. **Authentication → Sign In / Providers → Email**: turn off *Confirm email* for development (turn it back on before the final demo if you set up email).
 5. **Authentication → Sign In / Providers → Email** (password settings): minimum length 8 and require lowercase, uppercase, digits and symbols (NFR-01). Nicolas validates this in the form too.

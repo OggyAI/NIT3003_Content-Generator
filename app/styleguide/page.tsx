@@ -10,6 +10,7 @@ import Interactive from "./Interactive";
 export default function Home() {
   return (
     <main className="min-h-screen p-8">
+     <h1 className="text-3xl font-bold text-gray-900">Styleguide</h1>
       <Card className="mx-auto flex max-w-xl flex-col gap-8 p-8">
         <section>
           <h2 className="mb-4 text-xl font-bold">Buttons</h2>

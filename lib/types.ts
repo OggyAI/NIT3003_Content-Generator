@@ -134,7 +134,11 @@ export type GenerateRequest = {
 
 export type GenerateResponse =
   | { contentId: string; title: string; body: string; generationMs: number }
-  | { error: 'profile_incomplete' | 'generation_failed' | 'invalid_request' | 'unauthorised' };
+  | {
+      error: 'profile_incomplete' | 'generation_failed' | 'save_failed' | 'invalid_request' | 'unauthorised';
+      message?: string;
+      missing?: string[];
+    };
 
 export type AnalyseRequest = {
   contentId: string;
@@ -146,7 +150,14 @@ export type KeywordStat = { keyword: string; occurrences: number; density: numbe
 export type AnalyseResponse = {
   seoScore: number | null;
   keywordStats: KeywordStat[];
+  /** SEO tip (null when SEO wasn't requested). */
+  seoSuggestion: string | null;
   toneMatch: boolean | null;
   detectedTone: string | null;
+  /** Tone tip (null when tone wasn't requested or the tone check failed). */
   suggestion: string | null;
+  /** Set when a tone check was requested but the AI service failed. */
+  toneError?: string;
 };
+
+export type ContentSaveRequest = { title: string; body: string; keywords: string[] };
