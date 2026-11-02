@@ -3,8 +3,11 @@
 // Main nav (Dashboard):  <Sidebar title="Dashboard" subtitle="Create, manage, and optimise your content." />
 // Progress steps:        <Sidebar mode="steps" title="Content Creation Process" currentStep={1} />
 //   currentStep: 0 = Business Profile, 1 = Generate Content, 2 = Content Editor, 3 = Draft History
+// Nav mode shows a "Log out" button at the bottom.
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: "🏠" },
@@ -24,6 +27,23 @@ type SidebarProps = {
 
 export default function Sidebar({ mode = "nav", title, subtitle, currentStep = 0 }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+
+  async function handleLogout() {
+    setSigningOut(true);
+    setLogoutError(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      setSigningOut(false);
+      setLogoutError("Couldn't log out. Please try again.");
+      return;
+    }
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <aside className="sticky top-0 flex h-screen w-[280px] shrink-0 flex-col bg-navy px-6 py-10 text-white">
@@ -35,29 +55,53 @@ export default function Sidebar({ mode = "nav", title, subtitle, currentStep = 0
       </div>
 
       {mode === "nav" ? (
-        <nav aria-label="Main">
-          <ul className="flex flex-col gap-1">
-            {NAV.map((item) => {
-              const active = pathname.startsWith(item.href);
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    aria-current={active ? "page" : undefined}
-                    className={
-                      "flex items-center gap-3 rounded-control px-3 py-2 text-base font-medium transition-colors " +
-                      "focus-visible:outline-2 focus-visible:outline-white " +
-                      (active ? "bg-white/10 text-teal-300" : "text-white hover:bg-white/5")
-                    }
-                  >
-                    <span aria-hidden="true">{item.icon}</span>
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+        <>
+          <nav aria-label="Main">
+            <ul className="flex flex-col gap-1">
+              {NAV.map((item) => {
+                const active = pathname.startsWith(item.href);
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      aria-current={active ? "page" : undefined}
+                      className={
+                        "flex items-center gap-3 rounded-control px-3 py-2 text-base font-medium transition-colors " +
+                        "focus-visible:outline-2 focus-visible:outline-white " +
+                        (active ? "bg-white/10 text-teal-300" : "text-white hover:bg-white/5")
+                      }
+                    >
+                      <span aria-hidden="true">{item.icon}</span>
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          <div className="mt-auto border-t border-white/20 pt-4">
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={signingOut}
+              aria-busy={signingOut}
+              className={
+                "flex w-full items-center gap-3 rounded-control px-3 py-2 text-left text-base font-medium text-white transition-colors " +
+                "hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-white " +
+                "disabled:cursor-not-allowed disabled:opacity-60"
+              }
+            >
+              <span aria-hidden="true">🚪</span>
+              {signingOut ? "Logging out..." : "Log out"}
+            </button>
+            {logoutError && (
+              <p role="alert" className="mt-2 px-3 text-sm text-red-200">
+                {logoutError}
+              </p>
+            )}
+          </div>
+        </>
       ) : (
         <ol aria-label="Progress" className="flex flex-col gap-4">
           {STEPS.map((label, i) => {
