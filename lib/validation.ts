@@ -62,3 +62,41 @@ export function validateGenerateInput(raw: unknown): ValidationResult {
 
   return { ok: true, value: { contentType, platform, request, keywords } };
 }
+
+// ---- Editor save (FR-12, FR-13) ----
+export const TITLE_MAX = 200;
+export const BODY_MAX = 20_000;
+
+export type ValidContentInput = { title: string; body: string; keywords: string[] };
+
+export function validateContentInput(
+  raw: unknown,
+): { ok: true; value: ValidContentInput } | { ok: false; message: string } {
+  if (!raw || typeof raw !== 'object') return { ok: false, message: 'Request body must be JSON.' };
+  const b = raw as Record<string, unknown>;
+  const title = typeof b.title === 'string' ? b.title.trim() : '';
+  const body = typeof b.body === 'string' ? b.body.trim() : '';
+  if (!body) return { ok: false, message: 'Content cannot be empty.' };
+  if (body.length > BODY_MAX) return { ok: false, message: `Content must be under ${BODY_MAX.toLocaleString()} characters.` };
+  if (title.length > TITLE_MAX) return { ok: false, message: `Title must be under ${TITLE_MAX} characters.` };
+
+  let keywords: string[] = [];
+  if (b.keywords !== undefined) {
+    if (!Array.isArray(b.keywords) || b.keywords.some((k) => typeof k !== 'string')) {
+      return { ok: false, message: 'Keywords must be a list of words or phrases.' };
+    }
+    keywords = [...new Set((b.keywords as string[]).map((k) => k.trim()).filter(Boolean))];
+    if (keywords.length > MAX_KEYWORDS) return { ok: false, message: `Use at most ${MAX_KEYWORDS} keywords.` };
+    if (keywords.some((k) => k.length > KEYWORD_MAX)) {
+      return { ok: false, message: `Each keyword must be under ${KEYWORD_MAX} characters.` };
+    }
+  }
+  return { ok: true, value: { title: title || 'Untitled draft', body, keywords } };
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** True for a well-formed uuid — lets us 404 early on junk ids instead of a database error. */
+export function isUuid(id: unknown): id is string {
+  return typeof id === 'string' && UUID_RE.test(id);
+}
