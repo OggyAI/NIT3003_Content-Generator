@@ -102,7 +102,8 @@ export default function Sidebar({ mode = "nav", title, subtitle, currentStep = 0
             )}
           </div>
         </>
-      ) : (
+        ) : (
+        <>
         <ol aria-label="Progress" className="flex flex-col gap-4">
           {STEPS.map((label, i) => {
             const done = i < currentStep;
@@ -125,8 +126,18 @@ export default function Sidebar({ mode = "nav", title, subtitle, currentStep = 0
               </li>
             );
           })}
-        </ol>
+             </ol>
+          <div className="mt-auto border-t border-white/20 pt-4">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 rounded-control px-3 py-2 text-base font-medium text-white transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-white"
+            >
+              <span aria-hidden="true">←</span>
+              Back to Dashboard
+            </Link>
+          </div>
+        </>
       )}
-    </aside>
+         </aside>
   );
 }
