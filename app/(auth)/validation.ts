@@ -12,6 +12,11 @@ export const PASSWORD_RULES: { label: string; test: (p: string) => boolean }[] =
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Only allow redirects to pages inside our own site (stops "?next=https://evil.com").
+export function safeNext(next: string): string {
+  return next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+}
+
 export type RegisterFields = {
   email: string;
   password: string;
@@ -33,6 +38,19 @@ export function validatePassword(password: string): string | undefined {
     return `Password needs: ${missing.map((r) => r.label.toLowerCase()).join(", ")}.`;
   }
   return undefined;
+}
+
+// Reset password form: NFR-01 rules plus "type it twice" to catch typos.
+export function validateNewPassword(
+  password: string,
+  confirmPassword: string
+): { password?: string; confirmPassword?: string } {
+  const errors: { password?: string; confirmPassword?: string } = {};
+  const passwordError = validatePassword(password);
+  if (passwordError) errors.password = passwordError;
+  if (!confirmPassword) errors.confirmPassword = "Type your new password again.";
+  else if (confirmPassword !== password) errors.confirmPassword = "Passwords don't match.";
+  return errors;
 }
 
 export function validateBusinessName(name: string): string | undefined {

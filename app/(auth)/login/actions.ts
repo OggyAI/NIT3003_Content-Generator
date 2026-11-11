@@ -2,18 +2,13 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { validateEmail } from "../validation";
+import { safeNext, validateEmail } from "../validation";
 
 export type LoginState = {
   fieldErrors?: { email?: string; password?: string };
   formError?: string;
   email?: string; // sent back so the email box refills after an error
 };
-
-// Only allow redirects to pages inside our own site (stops "?next=https://evil.com").
-function safeNext(next: string): string {
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
-}
 
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
