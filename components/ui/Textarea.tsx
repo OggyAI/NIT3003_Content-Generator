@@ -18,8 +18,8 @@ export default function Textarea({ label, error, hint, id, rows = 8, className =
   const describedBy = [hint ? hintId : "", error ? errorId : ""].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={textareaId} className="text-sm font-semibold text-gray-900">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={textareaId} className="text-sm font-medium text-slate-700">
         {label}
       </label>
       <textarea
@@ -28,9 +28,9 @@ export default function Textarea({ label, error, hint, id, rows = 8, className =
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={
-          "resize-y rounded-control border bg-white px-3 py-2 text-sm leading-6 placeholder:text-muted " +
-          "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-navy " +
-          (error ? "border-red-600 " : "border-line ") +
+          "resize-y rounded-control border bg-white px-3.5 py-2.5 text-sm text-ink transition-shadow leading-6 placeholder:text-muted " +
+          "focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-navy focus-visible:ring-4 focus-visible:ring-navy/10 " +
+          (error ? "border-red-600 " : "border-field ") +
           className
         }
         {...rest}

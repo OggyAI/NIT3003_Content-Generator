@@ -2,7 +2,7 @@
 // <AppShell sidebar={<Sidebar title="Dashboard" />}>
 //   <Card>...page content...</Card>
 // </AppShell>
-// Desktop (md and up): sidebar on the left. Mobile: top bar with a ☰ menu that opens the sidebar.
+// Desktop (md and up): sidebar on the left. Mobile: top bar with a menu button that opens the sidebar.
 // The first Tab on every page shows a "Skip to main content" link (WCAG 2.4.1).
 import type { ReactNode } from "react";
 import MobileNav from "./MobileNav";
@@ -26,9 +26,14 @@ export default function AppShell({ sidebar, children }: AppShellProps) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="flex flex-1 items-start justify-center px-4 py-6 focus:outline-none md:items-center md:px-8 md:py-12"
+        className="relative isolate min-w-0 flex-1 px-4 py-6 focus:outline-none sm:px-6 md:px-10 md:py-10"
       >
-        <div className="w-full max-w-2xl">{children}</div>
+        {/* Soft navy/teal glow at the top of every page (decorative) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 bg-[radial-gradient(55%_100%_at_15%_0%,rgb(30_58_138/0.10),transparent),radial-gradient(45%_100%_at_90%_0%,rgb(20_184_166/0.12),transparent)]"
+        />
+        <div className="mx-auto w-full max-w-4xl">{children}</div>
       </main>
     </div>
   );
