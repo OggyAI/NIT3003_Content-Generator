@@ -10,12 +10,13 @@ type Variant = "primary" | "secondary";
 
 export function buttonClasses(variant: Variant = "primary") {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-control px-5 py-2 text-sm font-semibold transition-colors " +
+    "inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold " +
+    "transition-[background-color,border-color,box-shadow,transform] active:translate-y-px " +
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy " +
     "disabled:cursor-not-allowed disabled:opacity-60 ";
   const styles = {
-    primary: "bg-navy text-white hover:bg-navy-dark",
-    secondary: "border border-navy bg-white text-navy hover:bg-slate-50",
+    primary: "bg-navy text-white shadow-cta hover:bg-navy-dark",
+    secondary: "border border-navy/30 bg-white text-navy hover:border-navy/60 hover:bg-navy-50",
   };
   return base + styles[variant];
 }

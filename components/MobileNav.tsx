@@ -2,6 +2,7 @@
 // Mobile-only top bar + slide-in menu. Used inside AppShell; pages don't use this directly.
 // Closes on: link click, Escape, tapping outside, or the × button. Traps Tab focus while open.
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import BrandMark from "@/components/BrandMark";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -52,8 +53,11 @@ export default function MobileNav({ sidebar }: { sidebar: ReactNode }) {
 
   return (
     <div className="md:hidden">
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-navy px-4 text-white">
-        <p className="text-lg font-bold">AI Content Generator</p>
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-line bg-white/90 px-4 backdrop-blur">
+        <p className="flex items-center gap-2 font-display text-base font-bold text-ink">
+          <BrandMark size="sm" />
+          AI Content Generator
+        </p>
         <button
           ref={menuButtonRef}
           type="button"
@@ -61,7 +65,7 @@ export default function MobileNav({ sidebar }: { sidebar: ReactNode }) {
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label="Open menu"
-          className="flex h-10 w-10 items-center justify-center rounded-control hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white"
+          className="flex h-10 w-10 items-center justify-center rounded-control text-ink hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-navy"
         >
           <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -72,7 +76,7 @@ export default function MobileNav({ sidebar }: { sidebar: ReactNode }) {
       {open && (
         <div className="fixed inset-0 z-50">
           {/* Tapping the dark background closes the menu */}
-          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} aria-hidden="true" />
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setOpen(false)} aria-hidden="true" />
 
           <div
             id="mobile-menu"
@@ -80,7 +84,7 @@ export default function MobileNav({ sidebar }: { sidebar: ReactNode }) {
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            className="absolute inset-y-0 left-0 w-[280px] max-w-[85vw] overflow-y-auto shadow-xl"
+            className="absolute inset-y-0 left-0 w-[256px] max-w-[85vw] overflow-y-auto bg-white shadow-xl"
             onClick={(e) => {
               // Close when a link inside the sidebar is tapped
               if ((e.target as HTMLElement).closest("a")) setOpen(false);
@@ -90,7 +94,7 @@ export default function MobileNav({ sidebar }: { sidebar: ReactNode }) {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close menu"
-              className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-control text-2xl text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white"
+              className="absolute right-2 top-5 z-10 flex h-10 w-10 items-center justify-center rounded-control text-2xl text-slate-500 hover:bg-slate-100 hover:text-ink focus-visible:outline-2 focus-visible:outline-navy"
             >
               ×
             </button>

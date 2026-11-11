@@ -26,8 +26,8 @@ export default function Select({ label, options, placeholder, error, hint, id, c
     placeholder && rest.value === undefined && rest.defaultValue === undefined ? { defaultValue: "" } : {};
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={selectId} className="text-sm font-semibold text-gray-900">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={selectId} className="text-sm font-medium text-slate-700">
         {label}
       </label>
       <div className="relative">
@@ -36,9 +36,9 @@ export default function Select({ label, options, placeholder, error, hint, id, c
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={
-            "w-full appearance-none rounded-control border bg-white py-2 pl-3 pr-10 text-sm " +
-            "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-navy " +
-            (error ? "border-red-600 " : "border-line ") +
+            "w-full appearance-none rounded-control border bg-white py-2.5 pl-3.5 pr-10 text-sm text-ink transition-shadow " +
+            "focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-navy focus-visible:ring-4 focus-visible:ring-navy/10 " +
+            (error ? "border-red-600 " : "border-field ") +
             className
           }
           {...startEmpty}
