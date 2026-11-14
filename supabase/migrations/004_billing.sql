@@ -44,9 +44,12 @@ create policy "own business: read" on public.generation_usage
   for select to authenticated
   using (business_id = (select public.my_business_id()));
 
--- Read-only for signed-in users; nothing for anon. (service_role bypasses RLS.)
+-- Read-only for signed-in users; nothing for anon.
 revoke all on public.subscriptions, public.generation_usage from anon, authenticated;
 grant select on public.subscriptions, public.generation_usage to authenticated;
+-- The Stripe webhook (service-role key) writes subscriptions. service_role skips RLS but still
+-- needs table privileges, and this project doesn't grant them to new tables automatically.
+grant select, insert, update, delete on public.subscriptions to service_role;
 
 -- The current month in Melbourne time, e.g. 2026-11-01
 create or replace function public.current_usage_month()
