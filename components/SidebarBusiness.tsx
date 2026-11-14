@@ -11,15 +11,15 @@ const getBusinessName = cache(async (): Promise<string | null> => {
   return data?.business_name?.trim() || null;
 });
 
-const BOX = "mt-6 rounded-control bg-white/5 px-3 py-2";
+const BOX = "mt-5 rounded-control bg-page px-3 py-2";
 
 export default async function SidebarBusiness() {
   const name = await getBusinessName();
   if (!name) return null;
   return (
     <div className={BOX}>
-      <p className="text-sm text-blue-100">Business</p>
-      <p className="truncate font-semibold text-white" title={name}>
+      <p className="text-sm text-muted">Business</p>
+      <p className="truncate font-semibold text-ink" title={name}>
         {name}
       </p>
     </div>
@@ -30,7 +30,7 @@ export default async function SidebarBusiness() {
 export function SidebarBusinessPlaceholder() {
   return (
     <div aria-hidden="true" className={BOX}>
-      <p className="text-sm text-blue-100">Business</p>
+      <p className="text-sm text-muted">Business</p>
       <p className="font-semibold">&nbsp;</p>
     </div>
   );
