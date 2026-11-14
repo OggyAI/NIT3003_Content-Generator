@@ -13,6 +13,7 @@ import { Suspense, type ReactNode } from "react";
 import MobileNav from "./MobileNav";
 import Sidebar from "./Sidebar";
 import SidebarBusiness, { SidebarBusinessPlaceholder } from "./SidebarBusiness";
+import SidebarAdminLink from "./SidebarAdminLink";
 
 const WIDTHS = {
   narrow: "max-w-3xl",
@@ -32,6 +33,12 @@ export default function AppShell({ width = "narrow", children }: AppShellProps) 
       <SidebarBusiness />
     </Suspense>
   );
+  // Admins only; nothing at all for everyone else
+  const admin = (
+    <Suspense fallback={null}>
+      <SidebarAdminLink />
+    </Suspense>
+  );
 
   return (
     <div className="min-h-screen md:flex">
@@ -41,9 +48,9 @@ export default function AppShell({ width = "narrow", children }: AppShellProps) 
       >
         Skip to main content
       </a>
-      <MobileNav business={business} />
+      <MobileNav business={business} admin={admin} />
       <div className="hidden md:flex">
-        <Sidebar business={business} />
+        <Sidebar business={business} admin={admin} />
       </div>
       <main
         id="main-content"

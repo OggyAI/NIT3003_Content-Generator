@@ -10,7 +10,7 @@ import { MenuIcon } from "@/components/icons";
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export default function MobileNav({ business }: { business?: ReactNode }) {
+export default function MobileNav({ business, admin }: { business?: ReactNode; admin?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -88,7 +88,7 @@ export default function MobileNav({ business }: { business?: ReactNode }) {
               if ((e.target as HTMLElement).closest("a")) setOpen(false);
             }}
           >
-            <Sidebar business={business} onClose={() => setOpen(false)} />
+            <Sidebar business={business} admin={admin} onClose={() => setOpen(false)} />
           </div>
         </div>
       )}
