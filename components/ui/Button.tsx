@@ -15,17 +15,19 @@ type Size = "md" | "sm";
 
 export function buttonClasses(variant: Variant = "primary", size: Size = "md") {
   const base =
-    "inline-flex shrink-0 items-center justify-center gap-2 rounded-control font-semibold transition-colors " +
+    // Pill-shaped (visual refresh v2, Karma 14 Nov); inputs keep the 12px control radius
+    "inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-semibold " +
+    "transition-[background-color,border-color,box-shadow,transform] active:translate-y-px " +
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy " +
-    "disabled:cursor-not-allowed disabled:opacity-60 ";
+    "disabled:cursor-not-allowed disabled:opacity-60 disabled:active:translate-y-0 ";
   // sm stays 40px tall on touch screens (below md) so tap targets meet the 40px rule
   const sizes = {
-    md: "min-h-10 px-4 py-2 text-sm ",
-    sm: "min-h-10 px-3 py-1.5 text-sm md:min-h-8 ",
+    md: "min-h-10 px-5 py-2 text-sm ",
+    sm: "min-h-10 px-3.5 py-1.5 text-sm md:min-h-8 ",
   };
   const styles = {
-    primary: "bg-navy text-white hover:bg-navy-dark",
-    secondary: "border border-navy bg-white text-navy hover:bg-navy-50",
+    primary: "bg-navy text-white shadow-cta hover:bg-navy-dark",
+    secondary: "border border-navy/40 bg-white text-navy hover:border-navy hover:bg-navy-50",
     ghost: "text-navy hover:bg-navy-50",
     danger: "bg-danger text-white hover:bg-red-800",
     "danger-ghost": "text-danger hover:bg-danger-light",

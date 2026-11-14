@@ -14,6 +14,7 @@ import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import Badge from '@/components/ui/Badge';
+import FormatIcon from '@/components/ui/FormatIcon';
 import Callout from '@/components/ui/Callout';
 import {
   AlertIcon,
@@ -299,7 +300,10 @@ export default function EditorForm({ content, voice }: { content: Content; voice
             {saved.title || 'Untitled draft'}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-            <Badge variant="info">{FORMAT_LABELS[content.content_type]}</Badge>
+            <span className="inline-flex items-center gap-2 font-medium text-ink">
+              <FormatIcon type={content.content_type} size="sm" />
+              {FORMAT_LABELS[content.content_type]}
+            </span>
             <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5">
               {dirty && running !== 'save' && <span aria-hidden="true" className="h-2 w-2 rounded-full bg-warning" />}
               <span title={dirty ? undefined : fullDateTime(updatedAt)} suppressHydrationWarning>
@@ -447,12 +451,21 @@ export default function EditorForm({ content, voice }: { content: Content; voice
                     How many of your keywords appear in the body (70% of the score) and the title (30%).
                   </p>
                   {seoScore !== null ? (
-                    <p className="flex items-center gap-2">
-                      <span className="text-2xl font-semibold text-ink">{Math.round(seoScore * 100)}%</span>
-                      <Badge variant={seoScore >= 0.7 ? 'success' : 'warning'}>
-                        {seoScore >= 0.7 ? 'Good coverage' : 'Low coverage'}
-                      </Badge>
-                    </p>
+                    <div className="flex flex-col gap-2">
+                      <p className="flex items-center gap-2">
+                        <span className="font-display text-3xl font-bold text-ink">{Math.round(seoScore * 100)}%</span>
+                        <Badge variant={seoScore >= 0.7 ? 'success' : 'warning'}>
+                          {seoScore >= 0.7 ? 'Good coverage' : 'Low coverage'}
+                        </Badge>
+                      </p>
+                      {/* Decorative: the number above says the same thing */}
+                      <div aria-hidden="true" className="h-2 overflow-hidden rounded-full bg-navy-50">
+                        <div
+                          className={'h-full rounded-full ' + (seoScore >= 0.7 ? 'bg-teal' : 'bg-warning')}
+                          style={{ width: `${Math.round(seoScore * 100)}%` }}
+                        />
+                      </div>
+                    </div>
                   ) : (
                     <p className="text-sm text-ink">Add keywords above to get a keyword score.</p>
                   )}

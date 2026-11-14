@@ -11,8 +11,10 @@ import Badge from "@/components/ui/Badge";
 import Callout from "@/components/ui/Callout";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
+import FormatIcon from "@/components/ui/FormatIcon";
 import BrandMark from "@/components/BrandMark";
 import * as Icons from "@/components/icons";
+import { FORMAT_LABELS } from "@/lib/display";
 import Interactive from "./Interactive";
 
 const COLOURS = [
@@ -51,7 +53,7 @@ export default function StyleguidePage() {
       <div className="flex max-w-5xl flex-col gap-6">
         <PageHeader
           title="Style guide"
-          description="Tokens and components for the AI Content Generator. Inter only, navy and teal, quiet white surfaces."
+          description="Tokens and components for the AI Content Generator. Plus Jakarta Sans headings, Inter text, navy and teal."
           actions={
             <Link href="/dashboard" className={buttonClasses("secondary")}>
               Open the app
@@ -76,13 +78,53 @@ export default function StyleguidePage() {
         </Section>
 
         <Section title="Typography">
-          <p className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Page title (h1)</p>
-          <p className="text-lg font-semibold text-ink">Section title (h2)</p>
-          <p className="text-base font-semibold">Sub-section (h3)</p>
+          <p className="font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">Dashboard greeting</p>
+          <p className="font-display text-2xl font-semibold tracking-tight text-ink md:text-3xl">Page title (h1)</p>
+          <p className="font-display text-lg font-semibold text-ink">Section title (h2)</p>
+          <p className="font-display text-base font-semibold">Sub-section (h3)</p>
           <p className="text-sm leading-6 text-ink md:text-base">
-            Body text. Write in Australian English and say what things do: optimise, analyse, colour, Save draft.
+            Body text in Inter. Write in Australian English and say what things do: optimise, analyse, colour, Save
+            draft.
           </p>
-          <p className="text-sm text-muted">Hints and meta text use muted.</p>
+          <p className="text-sm text-muted">
+            Headings (h1–h3) use Plus Jakarta Sans automatically; use <code>font-display</code> for heading-style text
+            that isn&apos;t a heading. Hints and meta text use muted.
+          </p>
+        </Section>
+
+        <Section title="Format icons">
+          <ul className="flex flex-wrap gap-6">
+            {(["social", "blog", "email"] as const).map((t) => (
+              <li key={t} className="flex items-center gap-3 text-sm font-medium text-ink">
+                <FormatIcon type={t} />
+                {FORMAT_LABELS[t]}
+                <FormatIcon type={t} size="sm" />
+              </li>
+            ))}
+          </ul>
+          <p className="text-sm text-muted">
+            Social is teal, blog navy, email amber, wherever a format appears. Decorative: always next to the
+            format&apos;s name.
+          </p>
+        </Section>
+
+        <Section title="Panel with header strip">
+          <div className="overflow-hidden rounded-card border border-line">
+            <div className="flex items-center justify-between border-b border-line px-5 py-4">
+              <h3 className="text-lg font-bold text-ink">Recent drafts</h3>
+              <Link href="/styleguide" className="rounded text-sm font-semibold text-navy hover:underline">
+                View all
+              </Link>
+            </div>
+            <div className="flex items-center gap-4 px-5 py-3.5">
+              <FormatIcon type="social" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium text-ink">Winter menu launch</span>
+                <span className="text-sm text-muted">Social post</span>
+              </span>
+              <span className="text-sm text-muted">2 hours ago</span>
+            </div>
+          </div>
         </Section>
 
         <Section title="Buttons">
@@ -113,7 +155,8 @@ export default function StyleguidePage() {
             </Link>
           </div>
           <p className="text-sm text-muted">
-            One primary button per screen. Small buttons stay 40px tall on touch screens and shrink to 32px from md up.
+            Pill-shaped, with a soft navy glow under primary only. One primary button per screen. Small buttons stay
+            40px tall on touch screens and shrink to 32px from md up. Inputs keep the 12px control radius.
           </p>
         </Section>
 

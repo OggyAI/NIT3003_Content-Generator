@@ -8,6 +8,7 @@ import Form from 'next/form';
 import AppShell from '@/components/AppShell';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import FormatIcon from '@/components/ui/FormatIcon';
 import Input from '@/components/ui/Input';
 import PageHeader from '@/components/ui/PageHeader';
 import EmptyState from '@/components/ui/EmptyState';
@@ -66,7 +67,7 @@ export default async function HistoryPage({
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <nav aria-label="Filter by format" className="min-w-0">
-            <ul className="flex flex-wrap gap-1 rounded-control border border-field bg-white p-1">
+            <ul className="flex flex-wrap gap-1 rounded-3xl border border-field bg-white p-1">
               {FILTERS.map((x) => {
                 const active = x.value === filter;
                 return (
@@ -75,9 +76,9 @@ export default async function HistoryPage({
                       href={historyHref({ filter: x.value, q })}
                       aria-current={active ? 'page' : undefined}
                       className={
-                        'flex min-h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors ' +
+                        'flex min-h-9 items-center rounded-full px-4 text-sm font-medium transition-colors ' +
                         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy ' +
-                        (active ? 'bg-navy text-white' : 'text-ink hover:bg-navy-50')
+                        (active ? 'bg-navy text-white shadow-cta' : 'text-ink hover:bg-navy-50')
                       }
                     >
                       {x.label}
@@ -169,19 +170,21 @@ export default async function HistoryPage({
                 return (
                   <li
                     key={item.id}
-                    className="flex flex-col gap-3 px-4 py-4 sm:px-6 @2xl:flex-row @2xl:items-center @2xl:gap-4 @2xl:py-3"
+                    className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 px-4 py-4 sm:px-6 @2xl:flex @2xl:items-center @2xl:py-3.5"
                   >
+                    <FormatIcon type={item.content_type} />
                     <div className="min-w-0 flex-1">
                       <h2 className="font-medium break-words text-ink @2xl:truncate">{title}</h2>
                       <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
-                        <Badge variant="info">{FORMAT_LABELS[item.content_type]}</Badge>
+                        <span>{FORMAT_LABELS[item.content_type]}</span>
+                        <span aria-hidden="true">·</span>
                         <time dateTime={item.updated_at} title={fullDateTime(item.updated_at)}>
                           Saved {timeAgo(item.updated_at)}
                         </time>
                       </p>
                     </div>
                     {(item.seo_score !== null || item.tone_match !== null) && (
-                      <div className="flex flex-wrap items-center gap-2 @2xl:justify-end">
+                      <div className="col-start-2 flex flex-wrap items-center gap-2 @2xl:justify-end">
                         {item.seo_score !== null && (
                           <Badge variant={item.seo_score >= 0.7 ? 'success' : 'warning'}>
                             {Math.round(item.seo_score * 100)}% keywords
@@ -194,7 +197,7 @@ export default async function HistoryPage({
                         )}
                       </div>
                     )}
-                    <div className="flex items-center gap-2">
+                    <div className="col-start-2 flex items-center gap-2">
                       <Link href={`/editor/${item.id}`} className={buttonClasses('primary', 'sm')}>
                         Open<span className="sr-only">: {title}</span>
                       </Link>

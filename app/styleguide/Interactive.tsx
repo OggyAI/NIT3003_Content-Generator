@@ -7,18 +7,16 @@ import Chip from "@/components/ui/Chip";
 import SelectableCard from "@/components/ui/SelectableCard";
 import Spinner from "@/components/ui/Spinner";
 import Toast from "@/components/ui/Toast";
+import FormatIcon from "@/components/ui/FormatIcon";
+import { FORMAT_LABELS, FORMAT_OPTIONS } from "@/lib/display";
+import type { ContentType } from "@/lib/types";
 
 const VOICES = ["Professional", "Friendly", "Casual", "Persuasive"];
-const TYPES = [
-  { label: "Social post", description: "Instagram or Facebook caption" },
-  { label: "Blog outline", description: "Headings and key points" },
-  { label: "Marketing email", description: "Subject line and body" },
-];
 
 export default function Interactive() {
   const [products, setProducts] = useState(["Flat white", "Sourdough", "Catering"]);
   const [voice, setVoice] = useState("Friendly");
-  const [type, setType] = useState("Social post");
+  const [type, setType] = useState<ContentType>("social");
   const [toast, setToast] = useState<"success" | "error" | null>(null);
 
   return (
@@ -35,15 +33,16 @@ export default function Interactive() {
               <SelectableCard key={v} label={v} selected={voice === v} onSelect={() => setVoice(v)} />
             ))}
           </div>
-          <h3 className="text-base font-semibold">Content type, with descriptions</h3>
-          <div role="group" aria-label="Content type" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {TYPES.map((t) => (
+          <h3 className="text-base font-semibold">Format, as tiles with an icon and description</h3>
+          <div role="group" aria-label="Format" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {FORMAT_OPTIONS.map((t) => (
               <SelectableCard
-                key={t.label}
-                label={t.label}
+                key={t.value}
+                icon={<FormatIcon type={t.value} size="sm" />}
+                label={FORMAT_LABELS[t.value]}
                 description={t.description}
-                selected={type === t.label}
-                onSelect={() => setType(t.label)}
+                selected={type === t.value}
+                onSelect={() => setType(t.value)}
               />
             ))}
           </div>

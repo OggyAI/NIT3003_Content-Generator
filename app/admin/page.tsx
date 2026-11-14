@@ -3,6 +3,8 @@
 // checks the admin role itself and returns business-level totals only: no emails, no draft text.
 // Non-admins get the standard 404, so the page doesn't reveal that it exists.
 import { notFound } from 'next/navigation';
+import type { ReactNode } from 'react';
+import { DocumentsIcon, RefreshIcon, SparkleIcon, StoreIcon } from '@/components/icons';
 import AppShell from '@/components/AppShell';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -16,11 +18,16 @@ import DisableButton from './DisableButton';
 
 const seconds = (ms: number | null) => (ms === null ? '–' : `${(ms / 1000).toFixed(1)} s`);
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, icon, tile }: { label: string; value: string; icon: ReactNode; tile: string }) {
   return (
-    <Card>
-      <p className="text-sm text-muted">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tracking-tight text-ink">{value}</p>
+    <Card className="flex items-start gap-4">
+      <span aria-hidden="true" className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tile}`}>
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm text-muted">{label}</p>
+        <p className="mt-0.5 font-display text-2xl font-bold tracking-tight text-ink">{value}</p>
+      </div>
     </Card>
   );
 }
@@ -59,10 +66,15 @@ export default async function AdminPage() {
         ) : (
           <>
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-              <Stat label="Businesses" value={String(rows.length)} />
-              <Stat label="Drafts" value={String(totals.drafts)} />
-              <Stat label="Generation requests" value={String(totals.requests)} />
-              <Stat label="Average generation time" value={seconds(overallAvg)} />
+              <Stat label="Businesses" value={String(rows.length)} icon={<StoreIcon />} tile="bg-teal-50 text-teal-700" />
+              <Stat label="Drafts" value={String(totals.drafts)} icon={<DocumentsIcon />} tile="bg-navy-50 text-navy" />
+              <Stat
+                label="Generation requests"
+                value={String(totals.requests)}
+                icon={<SparkleIcon />}
+                tile="bg-amber-50 text-amber-700"
+              />
+              <Stat label="Average generation time" value={seconds(overallAvg)} icon={<RefreshIcon />} tile="bg-slate-100 text-slate-700" />
             </div>
 
             <section aria-labelledby="businesses-heading" className="flex flex-col gap-3">
@@ -79,7 +91,15 @@ export default async function AdminPage() {
                         key={r.business_id}
                         className="flex flex-col gap-3 px-4 py-4 sm:px-6 @3xl:flex-row @3xl:items-center @3xl:gap-6"
                       >
-                        <div className="min-w-0 flex-1">
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                          {/* Initial-letter tile, so rows are easy to scan */}
+                          <span
+                            aria-hidden="true"
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-navy-50 font-display font-bold text-navy"
+                          >
+                            {r.business_name.trim().charAt(0).toUpperCase() || '?'}
+                          </span>
+                          <div className="min-w-0 flex-1">
                           <h3 className="flex flex-wrap items-center gap-2 font-medium break-words text-ink">
                             {r.business_name}
                             {r.is_admin && <Badge variant="info">Admin</Badge>}
@@ -91,8 +111,9 @@ export default async function AdminPage() {
                               {timeAgo(r.joined_at)}
                             </time>
                           </p>
+                          </div>
                         </div>
-                        <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm @md:grid-cols-4 @3xl:w-[30rem] @3xl:shrink-0">
+                        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm @md:grid-cols-4 @3xl:w-[26rem] @3xl:shrink-0">
                           <div>
                             <dt className="text-muted">Drafts</dt>
                             <dd className="font-medium text-ink">{r.draft_count}</dd>
@@ -124,7 +145,8 @@ export default async function AdminPage() {
                           </div>
                         </dl>
                         {/* Admins (including you) can't be disabled here */}
-                        <div className="@3xl:w-56 @3xl:shrink-0">
+                        {/* Sized to its button (wider only while confirming), so the name column gets the room */}
+                        <div className="@3xl:min-w-24 @3xl:shrink-0">
                           {!r.is_admin && (
                             <DisableButton
                               businessId={r.business_id}

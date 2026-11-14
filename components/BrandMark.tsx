@@ -15,7 +15,9 @@ type BrandMarkProps = {
 export default function BrandMark({ tone = "light", size = "md", showName = true }: BrandMarkProps) {
   const tile =
     (size === "sm" ? "h-8 w-8 rounded-lg " : "h-9 w-9 rounded-control ") +
-    (tone === "dark" ? "bg-white/10 text-teal-300 ring-1 ring-white/20" : "bg-navy text-white");
+    (tone === "dark"
+      ? "bg-white/10 text-teal-300 ring-1 ring-white/20"
+      : "bg-linear-to-br from-navy to-teal-700 text-white shadow-sm ring-1 ring-navy/10");
 
   return (
     <span className="inline-flex items-center gap-2.5">
@@ -25,7 +27,7 @@ export default function BrandMark({ tone = "light", size = "md", showName = true
       {showName && (
         <span
           className={
-            "font-semibold leading-tight tracking-tight " +
+            "font-display font-bold leading-tight tracking-tight " +
             (size === "sm" ? "text-base " : "text-lg ") +
             (tone === "dark" ? "text-white" : "text-ink")
           }

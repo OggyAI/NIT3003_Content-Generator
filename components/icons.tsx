@@ -197,3 +197,30 @@ export function AlertIcon(props: IconProps) {
     </Svg>
   );
 }
+
+// Format icons (visual refresh v2): social post, blog outline, email newsletter
+export function ChatIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M20.5 12a8 8 0 0 1-11.6 7.1L3.5 20.5l1.4-5.4A8 8 0 1 1 20.5 12z" />
+    </Svg>
+  );
+}
+
+export function PageIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z" />
+      <path d="M14 3.5V8h4.5M9 13h6M9 16.5h4" />
+    </Svg>
+  );
+}
+
+export function MailIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+      <path d="m4 7.5 8 5.5 8-5.5" />
+    </Svg>
+  );
+}

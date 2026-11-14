@@ -11,6 +11,7 @@ import Button, { buttonClasses } from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import SelectableCard from '@/components/ui/SelectableCard';
+import FormatIcon from '@/components/ui/FormatIcon';
 import Badge from '@/components/ui/Badge';
 import { AlertIcon, CheckIcon, CopyIcon, PlusIcon, RefreshIcon, SparkleIcon } from '@/components/icons';
 import { FORMAT_LABELS, FORMAT_OPTIONS as TYPES, PLATFORM_OPTIONS as PLATFORMS } from '@/lib/display';
@@ -287,6 +288,7 @@ export default function GenerateForm({ voice, initialType, initialPlatform }: Ge
             {TYPES.map((t) => (
               <SelectableCard
                 key={t.value}
+                icon={<FormatIcon type={t.value} size="sm" />}
                 label={FORMAT_LABELS[t.value]}
                 description={t.description}
                 selected={contentType === t.value}

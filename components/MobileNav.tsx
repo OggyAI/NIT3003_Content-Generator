@@ -56,8 +56,8 @@ export default function MobileNav({ business, admin }: { business?: ReactNode; a
 
   return (
     <div className="md:hidden">
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 bg-navy px-4 text-white">
-        <BrandMark tone="dark" size="sm" />
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-b border-line bg-white/95 px-4 text-ink backdrop-blur">
+        <BrandMark size="sm" />
         <button
           ref={menuButtonRef}
           type="button"
@@ -65,7 +65,7 @@ export default function MobileNav({ business, admin }: { business?: ReactNode; a
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label="Open menu"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-navy"
         >
           <MenuIcon className="h-6 w-6" />
         </button>
@@ -74,7 +74,7 @@ export default function MobileNav({ business, admin }: { business?: ReactNode; a
       {open && (
         <div className="fixed inset-0 z-50">
           {/* Tapping the dark background closes the menu */}
-          <div className="absolute inset-0 bg-slate-900/50" onClick={() => setOpen(false)} aria-hidden="true" />
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setOpen(false)} aria-hidden="true" />
 
           <div
             id="mobile-menu"
@@ -82,7 +82,7 @@ export default function MobileNav({ business, admin }: { business?: ReactNode; a
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            className="absolute inset-y-0 left-0 flex w-64 max-w-[85vw] flex-col overflow-y-auto bg-navy shadow-xl"
+            className="absolute inset-y-0 left-0 flex w-64 max-w-[85vw] flex-col overflow-y-auto bg-white shadow-xl"
             onClick={(e) => {
               // Close when a link inside the sidebar is tapped
               if ((e.target as HTMLElement).closest("a")) setOpen(false);

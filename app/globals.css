@@ -21,19 +21,30 @@
   --color-line: #E3E8F0; /* decorative dividers and card borders only */
 
   --radius-control: 12px;
-  --radius-card: 16px;
+  --radius-card: 20px;
 
   --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(30 58 138 / 0.14);
+  /* Soft navy glow under primary buttons only */
+  --shadow-cta: 0 8px 20px -8px rgb(30 58 138 / 0.55);
 }
 
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   body {
     background: var(--color-page);
     color: var(--color-ink);
+  }
+
+  /* Headings use the display face (Plus Jakarta Sans); body text stays Inter */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
   }
 }
 
