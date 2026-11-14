@@ -6,14 +6,16 @@
 //   → log content_requests with status + generation_ms (NFR-03 evidence)
 //   → save draft to generated_content → 200 {contentId, title, body, generationMs}
 // Failures: 401 not signed in, 400 invalid/incomplete, 503 model failed,
-// 500 save failed. The page keeps the user's typed request on any error (NFR-05).
+// 500 save failed, 402 limit_reached (monthly plan limit, migration 004).
+// The page keeps the user's typed request on any error (NFR-05).
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessContext } from '@/lib/business-context';
 import { buildPrompt } from '@/lib/prompt-builder';
 import { classifyOpenAIError, describeOpenAIError, generateTitleAndBody } from '@/lib/openai';
 import { validateGenerateInput } from '@/lib/validation';
-import type { GenerationFailureReason } from '@/lib/types';
+import { getPlan } from '@/lib/billing';
+import type { GenerationFailureReason, LimitReachedResponse } from '@/lib/types';
 
 // Worst case: 3 attempts × 20 s. Vercel must not cut the function off first.
 export const maxDuration = 60;
@@ -48,6 +50,19 @@ export async function POST(request: Request) {
       { error: 'profile_incomplete', missing: ctx?.missing ?? ['business profile'] },
       { status: 400 },
     );
+  }
+
+  // 3b. Monthly limit (migration 004): refuse before the model is called. If the billing tables
+  // can't be read yet (migration not run), don't block generation.
+  const planInfo = await getPlan(supabase);
+  if (planInfo.ready && planInfo.used >= planInfo.limit) {
+    const body: LimitReachedResponse = {
+      error: 'limit_reached',
+      plan: planInfo.plan,
+      used: planInfo.used,
+      limit: planInfo.limit,
+    };
+    return NextResponse.json(body, { status: 402 });
   }
 
   // 4. Build the prompt and call the model, timing the whole attempt
@@ -111,6 +126,10 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: 'save_failed' }, { status: 500 });
   }
+
+  // Count it towards this month's limit only once the draft is saved
+  const { error: usageError } = await supabase.rpc('record_generation');
+  if (usageError) console.error('[api/generate] could not record usage:', usageError.code ?? usageError.message);
 
   return NextResponse.json({
     contentId: saved.id,
