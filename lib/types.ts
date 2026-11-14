@@ -20,6 +20,9 @@ export type BusinessProfile = {
   business_name: string;
   industry: string | null;
   description: string | null;
+  /** Settings defaults (migration 002). null = Generate starts on Social post / Instagram */
+  default_content_type: ContentType | null;
+  default_platform: Platform | null;
   created_at: string;
   updated_at: string;
 };
@@ -82,7 +85,14 @@ export type Database = {
     Tables: {
       business_profile: Table<
         BusinessProfile,
-        { owner_id: string; business_name: string; industry?: string | null; description?: string | null }
+        {
+          owner_id: string;
+          business_name: string;
+          industry?: string | null;
+          description?: string | null;
+          default_content_type?: ContentType | null;
+          default_platform?: Platform | null;
+        }
       >;
       brand_voice: Table<BrandVoice, { business_id: string; voice: BrandVoiceOption }>;
       products: Table<Product, { business_id: string; name: string; description?: string | null }>;
@@ -117,7 +127,11 @@ export type Database = {
       >;
     };
     Views: Record<string, never>;
-    Functions: { my_business_id: { Args: Record<string, never>; Returns: string | null } };
+    Functions: {
+      my_business_id: { Args: Record<string, never>; Returns: string | null };
+      // Migration 002: deletes the caller's own auth user (data cascades)
+      delete_my_account: { Args: Record<string, never>; Returns: undefined };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
