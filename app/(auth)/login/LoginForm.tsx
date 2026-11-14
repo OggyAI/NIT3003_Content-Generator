@@ -19,7 +19,7 @@ import {
 
 const initialState: LoginState = {};
 
-export default function LoginForm({ next }: { next: string }) {
+export default function LoginForm({ next, notice }: { next: string; notice?: string }) {
   const [state, formAction, pending] = useActionState(login, initialState);
   const [clientErrors, setClientErrors] = useState<LoginState["fieldErrors"]>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -44,6 +44,12 @@ export default function LoginForm({ next }: { next: string }) {
     <div>
       <h1 className={titleClass}>Log in</h1>
       <p className={introClass}>Welcome back. Log in to manage your content.</p>
+
+      {notice && (
+        <p role="status" className="mt-4 rounded-control border border-green-200 bg-success-light p-3 text-sm text-green-800">
+          {notice}
+        </p>
+      )}
 
       {state.formError && (
         <p role="alert" className={formErrorClass}>

@@ -14,7 +14,14 @@ import GenerateForm from './GenerateForm';
 
 export default async function GeneratePage() {
   const supabase = await createClient();
-  const ctx = await getBusinessContext(supabase);
+  const [ctx, prefs] = await Promise.all([
+    getBusinessContext(supabase),
+    // Settings › Content defaults (migration 002). If the columns aren't there yet the read
+    // fails, and the form simply starts on Social post / Instagram as before.
+    supabase.from('business_profile').select('default_content_type, default_platform').maybeSingle(),
+  ]);
+  const initialType = prefs.error ? null : (prefs.data?.default_content_type ?? null);
+  const initialPlatform = prefs.error ? null : (prefs.data?.default_platform ?? null);
   const missing = ctx?.missing ?? ['business profile'];
   const voice = ctx?.voice ? VOICE_LABELS[ctx.voice] : null;
 
@@ -66,7 +73,7 @@ export default async function GeneratePage() {
           </div>
         ) : (
           <Card>
-            <GenerateForm voice={voice} />
+            <GenerateForm voice={voice} initialType={initialType} initialPlatform={initialPlatform} />
           </Card>
         )}
       </div>
