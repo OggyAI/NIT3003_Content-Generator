@@ -125,6 +125,25 @@ export type Database = {
           tone_match?: boolean | null;
         }
       >;
+      // Migration 004: written only by the Stripe webhook (service role); users can read their own row
+      subscriptions: Table<
+        Subscription,
+        {
+          business_id: string;
+          stripe_customer_id: string;
+          stripe_subscription_id?: string | null;
+          status?: string;
+          price_id?: string | null;
+          current_period_end?: string | null;
+          cancel_at_period_end?: boolean;
+          updated_at?: string;
+        }
+      >;
+      // Migration 004: read-only for users; changed only through record_generation()
+      generation_usage: Table<
+        { business_id: string; month: string; count: number },
+        { business_id: string; month: string; count?: number }
+      >;
     };
     Views: Record<string, never>;
     Functions: {
@@ -135,6 +154,9 @@ export type Database = {
       is_admin: { Args: Record<string, never>; Returns: boolean };
       admin_business_overview: { Args: Record<string, never>; Returns: AdminBusinessRow[] };
       admin_set_account_disabled: { Args: { target_business: string; disable: boolean }; Returns: undefined };
+      // Migration 004: this month's successful generations, and +1 for the caller's own business
+      my_monthly_usage: { Args: Record<string, never>; Returns: number };
+      record_generation: { Args: Record<string, never>; Returns: undefined };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
@@ -160,11 +182,21 @@ export type GenerationFailureReason = 'quota' | 'rate_limit' | 'config' | 'timeo
 export type GenerateResponse =
   | { contentId: string; title: string; body: string; generationMs: number }
   | {
-      error: 'profile_incomplete' | 'generation_failed' | 'save_failed' | 'invalid_request' | 'unauthorised';
+      error:
+        | 'profile_incomplete'
+        | 'generation_failed'
+        | 'save_failed'
+        | 'invalid_request'
+        | 'unauthorised'
+        | 'limit_reached';
       message?: string;
       missing?: string[];
       /** Only with generation_failed (added in the UI overhaul; optional, so older clients ignore it) */
       reason?: GenerationFailureReason;
+      /** Only with limit_reached (402, migration 004) */
+      plan?: Plan;
+      used?: number;
+      limit?: number;
     };
 
 export type AnalyseRequest = {
@@ -188,6 +220,23 @@ export type AnalyseResponse = {
 };
 
 export type ContentSaveRequest = { title: string; body: string; keywords: string[] };
+
+/** A business's Stripe subscription (migration 004). Pro while status is active or trialing. */
+export type Subscription = {
+  business_id: string;
+  stripe_customer_id: string;
+  stripe_subscription_id: string | null;
+  status: string;
+  price_id: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  updated_at: string;
+};
+
+export type Plan = 'free' | 'pro';
+
+/** Sent with 402 limit_reached from POST /api/generate when this month's generations are used up */
+export type LimitReachedResponse = { error: 'limit_reached'; plan: Plan; used: number; limit: number };
 
 /** One row of admin_business_overview() (migration 003): business-level totals only, no personal data */
 export type AdminBusinessRow = {

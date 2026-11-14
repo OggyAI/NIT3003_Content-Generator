@@ -6,7 +6,8 @@
 -- they can see and change, deletes the test users, and finishes with a
 -- results table. Every row should say pass = true.
 -- The admin section (marked below) needs migration 003; the original 14
--- checks are unchanged.
+-- checks are unchanged. The billing section needs migration 004 (Stripe test data only;
+-- the cleanup at the end removes it with the test users).
 -- Screenshot the result for the diary / test plan.
 -- =====================================================================
 
@@ -177,6 +178,69 @@ reset role;
 insert into rls_results (test, pass)
 select 'Admin: re-enabling B clears the ban', banned_until is null
 from auth.users where id = '00000000-0000-4000-a000-00000000000b';
+
+-- ================= Billing (migration 004; run 004 first) =================
+reset role;
+-- As the webhook would (service role): A is on Pro
+insert into public.subscriptions (business_id, stripe_customer_id, stripe_subscription_id, status)
+values (current_setting('test.a_business')::uuid, 'cus_rls_test_a', 'sub_rls_test_a', 'active');
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-a000-00000000000a","role":"authenticated"}', true);
+select public.record_generation();
+select public.record_generation();
+insert into rls_results (test, pass) select 'Billing: A''s usage counts up to 2', public.my_monthly_usage() = 2;
+insert into rls_results (test, pass) select 'Billing: A sees their own subscription', count(*) = 1 from public.subscriptions;
+
+do $$
+begin
+  begin
+    update public.subscriptions set status = 'canceled';
+    insert into rls_results (test, pass) values ('Billing: A cannot change their own subscription', false);
+  exception when insufficient_privilege then
+    insert into rls_results (test, pass) values ('Billing: A cannot change their own subscription', true);
+  end;
+  begin
+    update public.generation_usage set count = 0;
+    insert into rls_results (test, pass) values ('Billing: A cannot reset their own usage', false);
+  exception when insufficient_privilege then
+    insert into rls_results (test, pass) values ('Billing: A cannot reset their own usage', true);
+  end;
+  begin
+    delete from public.generation_usage;
+    insert into rls_results (test, pass) values ('Billing: A cannot delete their usage rows', false);
+  exception when insufficient_privilege then
+    insert into rls_results (test, pass) values ('Billing: A cannot delete their usage rows', true);
+  end;
+end $$;
+
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-a000-00000000000b","role":"authenticated"}', true);
+insert into rls_results (test, pass)
+select 'Billing: B cannot see A''s subscription or usage',
+  (select count(*) from public.subscriptions) = 0 and (select count(*) from public.generation_usage) = 0;
+insert into rls_results (test, pass) select 'Billing: B''s own usage is 0', public.my_monthly_usage() = 0;
+do $$
+begin
+  insert into public.subscriptions (business_id, stripe_customer_id, status)
+  values (public.my_business_id(), 'cus_fake', 'active');
+  insert into rls_results (test, pass) values ('Billing: B cannot give themselves Pro', false);
+exception when insufficient_privilege then
+  insert into rls_results (test, pass) values ('Billing: B cannot give themselves Pro', true);
+end $$;
+
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$
+begin
+  perform 1 from public.subscriptions;
+  insert into rls_results (test, pass) values ('Billing: logged-out visitor cannot read subscriptions', false);
+exception when insufficient_privilege then
+  insert into rls_results (test, pass) values ('Billing: logged-out visitor cannot read subscriptions', true);
+end $$;
+reset role;
+insert into rls_results (test, pass)
+select 'Billing: A''s subscription unchanged after the attempts', count(*) = 1
+from public.subscriptions where stripe_customer_id = 'cus_rls_test_a' and status = 'active';
 
 -- ---------------- back to admin: confirm A's data untouched, clean up ----------------
 reset role;
