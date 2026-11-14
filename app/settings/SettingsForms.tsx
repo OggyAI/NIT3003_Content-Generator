@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import SelectableCard from '@/components/ui/SelectableCard';
+import FormatIcon from '@/components/ui/FormatIcon';
 import { AlertIcon, CheckIcon, TrashIcon } from '@/components/icons';
 import { PASSWORD_RULES, validateNewPassword } from '@/app/(auth)/validation';
 import { fieldErrorClass, inputClass, labelClass, ruleClass, toggleClass } from '@/app/(auth)/ui';
@@ -315,6 +316,7 @@ export function DefaultsCard({
                 {FORMAT_OPTIONS.map((t) => (
                   <SelectableCard
                     key={t.value}
+                    icon={<FormatIcon type={t.value} size="sm" />}
                     label={FORMAT_LABELS[t.value]}
                     description={t.description}
                     selected={type === t.value}

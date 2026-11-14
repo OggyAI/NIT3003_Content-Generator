@@ -10,9 +10,15 @@ import { AlertIcon, StoreIcon } from '@/components/icons';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessContext } from '@/lib/business-context';
 import { VOICE_LABELS, listInWords } from '@/lib/display';
+import type { ContentType } from '@/lib/types';
 import GenerateForm from './GenerateForm';
 
-export default async function GeneratePage() {
+// ?type= comes from the dashboard's format tiles and wins over the saved default
+const TYPES: ContentType[] = ['social', 'blog', 'email'];
+
+export default async function GeneratePage({ searchParams }: { searchParams: Promise<{ type?: string | string[] }> }) {
+  const { type } = await searchParams;
+  const requestedType = TYPES.find((t) => t === type) ?? null;
   const supabase = await createClient();
   const [ctx, prefs] = await Promise.all([
     getBusinessContext(supabase),
@@ -20,7 +26,7 @@ export default async function GeneratePage() {
     // fails, and the form simply starts on Social post / Instagram as before.
     supabase.from('business_profile').select('default_content_type, default_platform').maybeSingle(),
   ]);
-  const initialType = prefs.error ? null : (prefs.data?.default_content_type ?? null);
+  const initialType = requestedType ?? (prefs.error ? null : (prefs.data?.default_content_type ?? null));
   const initialPlatform = prefs.error ? null : (prefs.data?.default_platform ?? null);
   const missing = ctx?.missing ?? ['business profile'];
   const voice = ctx?.voice ? VOICE_LABELS[ctx.voice] : null;
@@ -34,15 +40,17 @@ export default async function GeneratePage() {
           meta={
             ctx ? (
               <>
-                <span>
-                  Writing for <span className="font-medium text-ink">{ctx.businessName}</span>
+                <span className="inline-flex flex-wrap items-center gap-x-2 rounded-full border border-line bg-white px-3 py-1">
+                  <span>
+                    Writing for <span className="font-medium text-ink">{ctx.businessName}</span>
+                  </span>
+                  {voice && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>{voice} voice</span>
+                    </>
+                  )}
                 </span>
-                {voice && (
-                  <>
-                    <span aria-hidden="true">·</span>
-                    <span>{voice} voice</span>
-                  </>
-                )}
                 <Link
                   href="/profile"
                   className="rounded font-medium text-navy underline underline-offset-4 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
