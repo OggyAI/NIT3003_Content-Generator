@@ -26,8 +26,8 @@ export default function Select({ label, options, placeholder, error, hint, id, c
     placeholder && rest.value === undefined && rest.defaultValue === undefined ? { defaultValue: "" } : {};
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={selectId} className="text-sm font-semibold text-gray-900">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={selectId} className="text-sm font-medium text-ink">
         {label}
       </label>
       <div className="relative">
@@ -36,9 +36,10 @@ export default function Select({ label, options, placeholder, error, hint, id, c
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={
-            "w-full appearance-none rounded-control border bg-white py-2 pl-3 pr-10 text-sm " +
-            "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-navy " +
-            (error ? "border-red-600 " : "border-line ") +
+            "min-h-10 w-full appearance-none rounded-control border bg-white py-2 pl-3 pr-10 text-sm text-ink " +
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy " +
+            "disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-muted " +
+            (error ? "border-danger " : "border-field ") +
             className
           }
           {...startEmpty}
@@ -69,7 +70,7 @@ export default function Select({ label, options, placeholder, error, hint, id, c
         </svg>
       </div>
       {hint && <p id={hintId} className="text-sm text-muted">{hint}</p>}
-      {error && <p id={errorId} className="text-sm text-red-600">{error}</p>}
+      {error && <p id={errorId} className="text-sm text-danger">{error}</p>}
     </div>
   );
 }

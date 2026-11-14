@@ -4,6 +4,18 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { login, type LoginState } from "./actions";
 import { validateEmail } from "../validation";
+import {
+  fieldErrorClass,
+  footerClass,
+  formErrorClass,
+  inputClass,
+  introClass,
+  labelClass,
+  linkClass,
+  submitClass,
+  titleClass,
+  toggleClass,
+} from "../ui";
 
 const initialState: LoginState = {};
 
@@ -30,11 +42,11 @@ export default function LoginForm({ next }: { next: string }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-slate-900">Log in</h1>
-      <p className="mt-1 text-sm text-slate-600">Welcome back. Log in to manage your content.</p>
+      <h1 className={titleClass}>Log in</h1>
+      <p className={introClass}>Welcome back. Log in to manage your content.</p>
 
       {state.formError && (
-        <p role="alert" className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <p role="alert" className={formErrorClass}>
           {state.formError}
         </p>
       )}
@@ -44,7 +56,7 @@ export default function LoginForm({ next }: { next: string }) {
 
         {/* Email */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-800">
+          <label htmlFor="email" className={labelClass}>
             Email
           </label>
           <input
@@ -58,7 +70,7 @@ export default function LoginForm({ next }: { next: string }) {
             className={inputClass(!!errors.email)}
           />
           {errors.email && (
-            <p id="email-error" className="mt-1 text-sm text-red-600">
+            <p id="email-error" className={fieldErrorClass}>
               {errors.email}
             </p>
           )}
@@ -66,11 +78,11 @@ export default function LoginForm({ next }: { next: string }) {
 
         {/* Password */}
         <div>
-          <div className="flex items-baseline justify-between">
-            <label htmlFor="password" className="block text-sm font-medium text-slate-800">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+            <label htmlFor="password" className={labelClass}>
               Password
             </label>
-            <Link href="/forgot-password" className="text-sm font-medium text-[#1E3A8A] underline">
+            <Link href="/forgot-password" className={`text-sm ${linkClass}`}>
               Forgot your password?
             </Link>
           </div>
@@ -84,44 +96,29 @@ export default function LoginForm({ next }: { next: string }) {
               aria-describedby={errors.password ? "password-error" : undefined}
               className={inputClass(!!errors.password) + " pr-16"}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword((s) => !s)}
-              className="absolute inset-y-0 right-2 my-auto h-8 px-2 text-sm text-slate-600 hover:text-slate-900"
-            >
+            <button type="button" onClick={() => setShowPassword((s) => !s)} className={toggleClass}>
               {showPassword ? "Hide" : "Show"}
+              <span className="sr-only"> password</span>
             </button>
           </div>
           {errors.password && (
-            <p id="password-error" className="mt-1 text-sm text-red-600">
+            <p id="password-error" className={fieldErrorClass}>
               {errors.password}
             </p>
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-md bg-[#1E3A8A] px-4 py-2.5 font-medium text-white hover:bg-[#1E3A8A]/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#14B8A6] focus-visible:ring-offset-2 disabled:opacity-60"
-        >
+        <button type="submit" disabled={pending} aria-busy={pending} className={submitClass}>
           {pending ? "Logging in…" : "Log in"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-600">
+      <p className={footerClass}>
         New here?{" "}
-        <Link href="/register" className="font-medium text-[#1E3A8A] underline">
+        <Link href="/register" className={linkClass}>
           Create an account
         </Link>
       </p>
     </div>
   );
-}
-
-function inputClass(hasError: boolean) {
-  return [
-    "mt-1 block w-full rounded-md border px-3 py-2 text-slate-900 shadow-sm",
-    "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#14B8A6]",
-    hasError ? "border-red-500" : "border-slate-300",
-  ].join(" ");
 }

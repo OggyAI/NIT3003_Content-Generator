@@ -11,8 +11,9 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessContext } from '@/lib/business-context';
 import { buildPrompt } from '@/lib/prompt-builder';
-import { generateTitleAndBody } from '@/lib/openai';
+import { classifyOpenAIError, describeOpenAIError, generateTitleAndBody } from '@/lib/openai';
 import { validateGenerateInput } from '@/lib/validation';
+import type { GenerationFailureReason } from '@/lib/types';
 
 // Worst case: 3 attempts × 20 s. Vercel must not cut the function off first.
 export const maxDuration = 60;
@@ -59,10 +60,13 @@ export async function POST(request: Request) {
 
   const started = Date.now();
   let generated: { title: string; body: string } | null = null;
+  let failure: GenerationFailureReason = 'unknown';
   try {
     generated = await generateTitleAndBody(instructions, promptInput);
   } catch (err) {
-    console.error('[api/generate] model call failed:', err instanceof Error ? err.message : err);
+    // Details stay in the server log; the browser only gets the short reason
+    failure = classifyOpenAIError(err);
+    console.error(`[api/generate] model call failed (${failure}):`, describeOpenAIError(err));
   }
   const generationMs = Date.now() - started;
 
@@ -82,7 +86,7 @@ export async function POST(request: Request) {
   if (requestError) console.error('[api/generate] could not log request:', requestError.message);
 
   if (!generated) {
-    return NextResponse.json({ error: 'generation_failed' }, { status: 503 });
+    return NextResponse.json({ error: 'generation_failed', reason: failure }, { status: 503 });
   }
 
   // 6. Save as a draft. Only report success once it is stored.

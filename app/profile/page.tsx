@@ -1,8 +1,6 @@
 // Owner: Nicolas. Business profile (Figure 1.3, FR-03 to FR-06).
 import { redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
-import Sidebar from "@/components/Sidebar";
-import LogoutButton from "@/app/(auth)/LogoutButton";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "./ProfileForm";
 import type { ProfileFields } from "./validation";
@@ -59,10 +57,7 @@ export default async function ProfilePage() {
   };
 
   return (
-    <AppShell sidebar={<Sidebar mode="steps" currentStep={0} />}>
-      <div className="mb-4 flex justify-end">
-        <LogoutButton />
-      </div>
+    <AppShell width="narrow">
       <ProfileForm initial={initial} />
     </AppShell>
   );

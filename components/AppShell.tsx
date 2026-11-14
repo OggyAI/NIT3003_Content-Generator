@@ -1,18 +1,38 @@
 // Usage:
-// <AppShell sidebar={<Sidebar title="Dashboard" />}>
-//   <Card>...page content...</Card>
+// <AppShell width="wide">
+//   <PageHeader title="Draft history" description="..." />
+//   ...page content...
 // </AppShell>
-// Desktop (md and up): sidebar on the left. Mobile: top bar with a ☰ menu that opens the sidebar.
+// width: "narrow" (max-w-3xl: profile, settings, generate)
+//        "wide"   (max-w-6xl: dashboard, history, admin)
+//        "editor" (room for a ~70ch writing column plus a 320px analysis column at lg)
+// Content sits at the top left of the page, next to the sidebar.
+// Desktop (md and up): navy sidebar on the left. Mobile: navy top bar with a menu button.
 // The first Tab on every page shows a "Skip to main content" link (WCAG 2.4.1).
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import MobileNav from "./MobileNav";
+import Sidebar from "./Sidebar";
+import SidebarBusiness, { SidebarBusinessPlaceholder } from "./SidebarBusiness";
+
+const WIDTHS = {
+  narrow: "max-w-3xl",
+  wide: "max-w-6xl",
+  editor: "max-w-[calc(70ch+22rem)]",
+};
 
 type AppShellProps = {
-  sidebar: ReactNode;
+  width?: keyof typeof WIDTHS;
   children: ReactNode;
 };
 
-export default function AppShell({ sidebar, children }: AppShellProps) {
+export default function AppShell({ width = "narrow", children }: AppShellProps) {
+  // Streams in without holding up the page (and works inside loading.tsx skeletons)
+  const business = (
+    <Suspense fallback={<SidebarBusinessPlaceholder />}>
+      <SidebarBusiness />
+    </Suspense>
+  );
+
   return (
     <div className="min-h-screen md:flex">
       <a
@@ -21,14 +41,16 @@ export default function AppShell({ sidebar, children }: AppShellProps) {
       >
         Skip to main content
       </a>
-      <MobileNav sidebar={sidebar} />
-      <div className="hidden md:flex">{sidebar}</div>
+      <MobileNav business={business} />
+      <div className="hidden md:flex">
+        <Sidebar business={business} />
+      </div>
       <main
         id="main-content"
         tabIndex={-1}
-        className="flex flex-1 items-start justify-center px-4 py-6 focus:outline-none md:items-center md:px-8 md:py-12"
+        className="min-w-0 flex-1 px-4 py-6 focus:outline-none md:px-8 md:py-10"
       >
-        <div className="w-full max-w-2xl">{children}</div>
+        <div className={`w-full ${WIDTHS[width]}`}>{children}</div>
       </main>
     </div>
   );
