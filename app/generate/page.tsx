@@ -9,6 +9,7 @@ import { buttonClasses } from '@/components/ui/Button';
 import { AlertIcon, StoreIcon } from '@/components/icons';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessContext } from '@/lib/business-context';
+import { getPlan } from '@/lib/billing';
 import { VOICE_LABELS, listInWords } from '@/lib/display';
 import type { ContentType } from '@/lib/types';
 import GenerateForm from './GenerateForm';
@@ -20,12 +21,15 @@ export default async function GeneratePage({ searchParams }: { searchParams: Pro
   const { type } = await searchParams;
   const requestedType = TYPES.find((t) => t === type) ?? null;
   const supabase = await createClient();
-  const [ctx, prefs] = await Promise.all([
+  const [ctx, prefs, planInfo] = await Promise.all([
     getBusinessContext(supabase),
     // Settings › Content defaults (migration 002). If the columns aren't there yet the read
     // fails, and the form simply starts on Social post / Instagram as before.
     supabase.from('business_profile').select('default_content_type, default_platform').maybeSingle(),
+    // Plan and this month's usage (migration 004); the API enforces the limit itself
+    getPlan(supabase),
   ]);
+  const usage = planInfo.ready ? { plan: planInfo.plan, used: planInfo.used, limit: planInfo.limit } : null;
   const initialType = requestedType ?? (prefs.error ? null : (prefs.data?.default_content_type ?? null));
   const initialPlatform = prefs.error ? null : (prefs.data?.default_platform ?? null);
   const missing = ctx?.missing ?? ['business profile'];
@@ -81,7 +85,7 @@ export default async function GeneratePage({ searchParams }: { searchParams: Pro
           </div>
         ) : (
           <Card>
-            <GenerateForm voice={voice} initialType={initialType} initialPlatform={initialPlatform} />
+            <GenerateForm voice={voice} initialType={initialType} initialPlatform={initialPlatform} usage={usage} />
           </Card>
         )}
       </div>
