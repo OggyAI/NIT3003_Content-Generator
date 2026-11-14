@@ -113,7 +113,7 @@ export default async function AdminPage() {
                           </p>
                           </div>
                         </div>
-                        <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm @md:grid-cols-4 @3xl:w-[30rem] @3xl:shrink-0">
+                        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm @md:grid-cols-4 @3xl:w-[26rem] @3xl:shrink-0">
                           <div>
                             <dt className="text-muted">Drafts</dt>
                             <dd className="font-medium text-ink">{r.draft_count}</dd>
@@ -145,7 +145,8 @@ export default async function AdminPage() {
                           </div>
                         </dl>
                         {/* Admins (including you) can't be disabled here */}
-                        <div className="@3xl:w-56 @3xl:shrink-0">
+                        {/* Sized to its button (wider only while confirming), so the name column gets the room */}
+                        <div className="@3xl:min-w-24 @3xl:shrink-0">
                           {!r.is_admin && (
                             <DisableButton
                               businessId={r.business_id}
