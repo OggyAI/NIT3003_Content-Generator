@@ -19,8 +19,8 @@ export default function Input({ label, error, hint, id, className = "", ...rest 
   const describedBy = [hint ? hintId : "", error ? errorId : ""].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm font-semibold text-gray-900">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={inputId} className="text-sm font-medium text-ink">
         {label}
       </label>
       <input
@@ -28,9 +28,10 @@ export default function Input({ label, error, hint, id, className = "", ...rest 
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={
-          "rounded-control border bg-white px-3 py-2 text-sm placeholder:text-muted " +
-          "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-navy " +
-          (error ? "border-red-600 " : "border-field ") +
+          "min-h-10 rounded-control border bg-white px-3 py-2 text-sm text-ink placeholder:text-muted " +
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy " +
+          "disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-muted " +
+          (error ? "border-danger " : "border-field ") +
           className
         }
         {...rest}
@@ -41,7 +42,7 @@ export default function Input({ label, error, hint, id, className = "", ...rest 
         </p>
       )}
       {error && (
-        <p id={errorId} className="text-sm text-red-600">
+        <p id={errorId} className="text-sm text-danger">
           {error}
         </p>
       )}
