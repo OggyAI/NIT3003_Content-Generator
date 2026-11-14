@@ -3,7 +3,6 @@
 // owner), with a content-type filter, and Open / Duplicate actions.
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
-import Sidebar from '@/components/Sidebar';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import { buttonClasses } from '@/components/ui/Button';
@@ -47,7 +46,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: Prom
   const { data: items, error } = await query;
 
   return (
-    <AppShell sidebar={<Sidebar title="Draft History" subtitle="Access and manage your saved drafts." />}>
+    <AppShell width="wide">
       <Card className="p-8 sm:p-10">
         <header className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">Draft History</h1>

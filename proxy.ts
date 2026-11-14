@@ -7,7 +7,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/session';
 
-const PROTECTED = ['/dashboard', '/profile', '/generate', '/editor', '/history'];
+const PROTECTED = ['/dashboard', '/profile', '/generate', '/editor', '/history', '/settings'];
 
 export async function proxy(request: NextRequest) {
   const { response, userId } = await updateSession(request);

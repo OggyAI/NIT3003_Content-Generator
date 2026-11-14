@@ -3,7 +3,6 @@
 // comes back empty, so it shows "not found" without revealing it exists.
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
-import Sidebar from '@/components/Sidebar';
 import Card from '@/components/ui/Card';
 import { buttonClasses } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/server';
@@ -22,11 +21,9 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
         .maybeSingle()
     : { data: null };
 
-  const sidebar = <Sidebar title="Content Editor" subtitle="Refine, analyse and save your content." />;
-
   if (!content) {
     return (
-      <AppShell sidebar={sidebar}>
+      <AppShell width="narrow">
         <Card className="p-8 text-center sm:p-10">
           <h1 className="text-2xl font-bold text-gray-900">Content not found</h1>
           <p className="mt-2 text-muted">
@@ -41,7 +38,7 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
   }
 
   return (
-    <AppShell sidebar={sidebar}>
+    <AppShell width="editor">
       <Card className="p-8 sm:p-10">
         {/* key forces a fresh form when navigating between items */}
         <EditorForm key={content.id} content={content} />

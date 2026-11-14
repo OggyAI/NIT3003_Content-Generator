@@ -1,12 +1,16 @@
 "use client";
 // Mobile-only top bar + slide-in menu. Used inside AppShell; pages don't use this directly.
-// Closes on: link click, Escape, tapping outside, or the × button. Traps Tab focus while open.
+// The menu is the same Sidebar as desktop, so the items always match.
+// Closes on: link click, Escape, tapping outside, or the Close button. Traps Tab focus while open.
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import BrandMark from "@/components/BrandMark";
+import Sidebar from "@/components/Sidebar";
+import { MenuIcon } from "@/components/icons";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export default function MobileNav({ sidebar }: { sidebar: ReactNode }) {
+export default function MobileNav({ business }: { business?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -46,14 +50,14 @@ export default function MobileNav({ sidebar }: { sidebar: ReactNode }) {
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
-      menuButton?.focus(); // give focus back to the ☰ button
+      menuButton?.focus(); // give focus back to the menu button
     };
   }, [open]);
 
   return (
     <div className="md:hidden">
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-navy px-4 text-white">
-        <p className="text-lg font-bold">AI Content Generator</p>
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 bg-navy px-4 text-white">
+        <BrandMark tone="dark" size="sm" />
         <button
           ref={menuButtonRef}
           type="button"
@@ -61,18 +65,16 @@ export default function MobileNav({ sidebar }: { sidebar: ReactNode }) {
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label="Open menu"
-          className="flex h-10 w-10 items-center justify-center rounded-control hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white"
         >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <MenuIcon className="h-6 w-6" />
         </button>
       </header>
 
       {open && (
         <div className="fixed inset-0 z-50">
           {/* Tapping the dark background closes the menu */}
-          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} aria-hidden="true" />
+          <div className="absolute inset-0 bg-slate-900/50" onClick={() => setOpen(false)} aria-hidden="true" />
 
           <div
             id="mobile-menu"
@@ -80,21 +82,13 @@ export default function MobileNav({ sidebar }: { sidebar: ReactNode }) {
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            className="absolute inset-y-0 left-0 w-[280px] max-w-[85vw] overflow-y-auto shadow-xl"
+            className="absolute inset-y-0 left-0 flex w-64 max-w-[85vw] flex-col overflow-y-auto bg-navy shadow-xl"
             onClick={(e) => {
               // Close when a link inside the sidebar is tapped
               if ((e.target as HTMLElement).closest("a")) setOpen(false);
             }}
           >
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Close menu"
-              className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-control text-2xl text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white"
-            >
-              ×
-            </button>
-            {sidebar}
+            <Sidebar business={business} onClose={() => setOpen(false)} />
           </div>
         </div>
       )}

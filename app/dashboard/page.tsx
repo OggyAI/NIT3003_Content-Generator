@@ -1,7 +1,6 @@
 // Owner: Harry — dashboard (Figure 1.2)
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
-import Sidebar from "@/components/Sidebar";
 import Card from "@/components/ui/Card";
 import { buttonClasses } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
@@ -37,31 +36,19 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let businessName: string | null = null;
   let recent: { id: string; title: string | null; content_type: string; created_at: string }[] = [];
 
   if (user) {
-    const [{ data: profile }, { data: content }] = await Promise.all([
-      supabase.from("business_profile").select("business_name").eq("owner_id", user.id).maybeSingle(),
-      supabase
-        .from("generated_content")
-        .select("id, title, content_type, created_at")
-        .order("created_at", { ascending: false })
-        .limit(3),
-    ]);
-    businessName = profile?.business_name ?? null;
+    const { data: content } = await supabase
+      .from("generated_content")
+      .select("id, title, content_type, created_at")
+      .order("created_at", { ascending: false })
+      .limit(3);
     recent = content ?? [];
   }
 
   return (
-    <AppShell
-      sidebar={
-        <Sidebar
-          title="Dashboard"
-          subtitle={businessName ? `${businessName}: create, manage, and optimise your content.` : "Create, manage, and optimise your content."}
-        />
-      }
-    >
+    <AppShell width="wide">
       <Card className="p-8 sm:p-10">
         <header className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">Welcome Back!</h1>

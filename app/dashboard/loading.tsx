@@ -1,6 +1,5 @@
 // Skeleton shown while the dashboard reads data from Supabase.
 import AppShell from "@/components/AppShell";
-import Sidebar from "@/components/Sidebar";
 import Card from "@/components/ui/Card";
 
 function Bar({ className = "" }: { className?: string }) {
@@ -9,7 +8,7 @@ function Bar({ className = "" }: { className?: string }) {
 
 export default function DashboardLoading() {
   return (
-    <AppShell sidebar={<Sidebar title="Dashboard" subtitle="Create, manage, and optimise your content." />}>
+    <AppShell width="wide">
       <Card className="p-8 sm:p-10">
         <div role="status" className="animate-pulse">
           <span className="sr-only">Loading your dashboard…</span>
