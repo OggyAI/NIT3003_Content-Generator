@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/admin';
 import { fullDateTime, timeAgo } from '@/lib/display';
 import type { AdminBusinessRow } from '@/lib/types';
+import DisableButton from './DisableButton';
 
 const seconds = (ms: number | null) => (ms === null ? '–' : `${(ms / 1000).toFixed(1)} s`);
 
@@ -122,6 +123,16 @@ export default async function AdminPage() {
                             </dd>
                           </div>
                         </dl>
+                        {/* Admins (including you) can't be disabled here */}
+                        <div className="@3xl:w-56 @3xl:shrink-0">
+                          {!r.is_admin && (
+                            <DisableButton
+                              businessId={r.business_id}
+                              businessName={r.business_name}
+                              disabled={r.disabled}
+                            />
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>
