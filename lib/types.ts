@@ -132,12 +132,21 @@ export type GenerateRequest = {
   keywords?: string[];
 };
 
+/**
+ * Why a model call failed, sent with 503 generation_failed so the UI can say something useful.
+ * quota = the OpenAI account is out of credit; rate_limit = too many requests just now;
+ * config = bad key or unknown model; timeout = no answer in time; unknown = anything else.
+ */
+export type GenerationFailureReason = 'quota' | 'rate_limit' | 'config' | 'timeout' | 'unknown';
+
 export type GenerateResponse =
   | { contentId: string; title: string; body: string; generationMs: number }
   | {
       error: 'profile_incomplete' | 'generation_failed' | 'save_failed' | 'invalid_request' | 'unauthorised';
       message?: string;
       missing?: string[];
+      /** Only with generation_failed (added in the UI overhaul; optional, so older clients ignore it) */
+      reason?: GenerationFailureReason;
     };
 
 export type AnalyseRequest = {

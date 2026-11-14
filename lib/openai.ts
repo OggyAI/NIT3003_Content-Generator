@@ -1,7 +1,8 @@
 // Owner: Oggy. Server-only OpenAI wrapper. Never import this from a
 // 'use client' file — it reads OPENAI_API_KEY.
 import 'server-only';
-import OpenAI from 'openai';
+import OpenAI, { APIConnectionTimeoutError, APIError, OpenAIError } from 'openai';
+import type { GenerationFailureReason } from '@/lib/types';
 
 // 20 s per attempt, up to 2 automatic retries on timeouts / 429 / 5xx
 // (Algorithm 1: "send to GPT API → retry on failure").
@@ -47,6 +48,44 @@ export async function generateJson<T>(opts: {
     },
   });
   return JSON.parse(response.output_text) as T;
+}
+
+/**
+ * Turns an error from a model call into a reason the UI can explain (§8: a 429 for missing
+ * credit used to show up as "did not respond in time"). The SDK has already retried by now.
+ */
+export function classifyOpenAIError(err: unknown): GenerationFailureReason {
+  if (err instanceof APIConnectionTimeoutError) return 'timeout';
+  if (err instanceof APIError) {
+    const code = `${err.code ?? ''} ${err.type ?? ''}`.toLowerCase();
+    const message = (err.message ?? '').toLowerCase();
+    if (err.status === 429) {
+      // insufficient_quota is the documented code; production has also returned credit_balance_exhausted
+      const outOfCredit =
+        code.includes('insufficient_quota') ||
+        code.includes('credit_balance_exhausted') ||
+        message.includes('quota') ||
+        message.includes('credit');
+      return outOfCredit ? 'quota' : 'rate_limit';
+    }
+    if (err.status === 401) return 'config';
+    if (code.includes('model_not_found') || (err.status === 404 && message.includes('model'))) return 'config';
+  }
+  // The client throws this before any request if OPENAI_API_KEY is missing
+  if (err instanceof OpenAIError && /api[_ ]?key/i.test(err.message)) return 'config';
+  return 'unknown';
+}
+
+/** Error details for server logs only, with anything that looks like an API key masked. */
+export function describeOpenAIError(err: unknown): string {
+  const redact = (text: string) => text.replace(/sk-[\w*.-]+/g, 'sk-[redacted]');
+  if (err instanceof APIError) {
+    return redact(
+      `status=${err.status ?? 'none'} code=${err.code ?? 'none'} type=${err.type ?? 'none'} ` +
+        `request_id=${err.requestID ?? 'none'} message=${err.message}`,
+    );
+  }
+  return redact(err instanceof Error ? err.message : String(err));
 }
 
 /** Asks the model for a {title, body} JSON object. Throws on failure. */
