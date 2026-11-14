@@ -90,7 +90,11 @@ export default function StyleguidePage() {
             <Button>Save draft</Button>
             <Button variant="secondary">Save as new version</Button>
             <Button variant="ghost">Duplicate</Button>
-            <Button variant="danger">Delete draft</Button>
+            <Button variant="danger-ghost">
+              <Icons.TrashIcon className="h-4 w-4" />
+              Delete draft
+            </Button>
+            <Button variant="danger">Yes, delete</Button>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Button size="sm">Open</Button>

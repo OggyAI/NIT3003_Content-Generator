@@ -2,14 +2,15 @@
 // <Button onClick={save}>Save draft</Button>
 // <Button variant="secondary">Save as new version</Button>
 // <Button variant="ghost" size="sm">Duplicate</Button>
-// <Button variant="danger">Delete draft</Button>
+// <Button variant="danger">Yes, delete</Button>          (confirming a destructive action)
+// <Button variant="danger-ghost">Delete draft</Button>   (quiet trigger that opens the confirmation)
 // <Button loading>Generating…</Button>        (sets disabled + aria-busy and shows a spinner)
 // For a link that looks like a button:
 // <Link href="/generate" className={buttonClasses()}>Create content</Link>
 // <Link href="/history" className={buttonClasses("ghost", "sm")}>View all</Link>
-import type { ButtonHTMLAttributes } from "react";
+import type { ComponentProps } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "danger-ghost";
 type Size = "md" | "sm";
 
 export function buttonClasses(variant: Variant = "primary", size: Size = "md") {
@@ -27,11 +28,13 @@ export function buttonClasses(variant: Variant = "primary", size: Size = "md") {
     secondary: "border border-navy bg-white text-navy hover:bg-navy-50",
     ghost: "text-navy hover:bg-navy-50",
     danger: "bg-danger text-white hover:bg-red-800",
+    "danger-ghost": "text-danger hover:bg-danger-light",
   };
   return base + sizes[size] + styles[variant];
 }
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+// ComponentProps includes `ref` (a normal prop in React 19), so callers can focus the button
+type ButtonProps = ComponentProps<"button"> & {
   variant?: Variant;
   size?: Size;
   loading?: boolean;

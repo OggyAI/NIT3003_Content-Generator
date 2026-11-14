@@ -1,48 +1,53 @@
-// Owner: Oggy — FR-12/FR-13 content editor (Figure 1.6).
-// Server part: loads the content item. RLS means another business's item
-// comes back empty, so it shows "not found" without revealing it exists.
+// Owner: Oggy — FR-12/FR-13 content editor (Figure 1.6). Rebuilt for the UI overhaul (CLAUDE.md §2.2).
+// Server part: loads the content item and the saved brand voice (for the tone check's wording).
+// RLS means another business's item comes back empty, so it shows "not found" without
+// revealing it exists (NFR-02).
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
-import Card from '@/components/ui/Card';
+import PageHeader from '@/components/ui/PageHeader';
 import { buttonClasses } from '@/components/ui/Button';
+import { ArrowLeftIcon } from '@/components/icons';
 import { createClient } from '@/lib/supabase/server';
 import { isUuid } from '@/lib/validation';
+import { VOICE_LABELS } from '@/lib/display';
 import EditorForm from './EditorForm';
 
 export default async function EditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: content } = isUuid(id)
-    ? await supabase
-        .from('generated_content')
-        .select('id, content_type, title, body, keywords, seo_score, tone_match, created_at, updated_at')
-        .eq('id', id)
-        .maybeSingle()
-    : { data: null };
+  const [{ data: content }, { data: brand }] = await Promise.all([
+    isUuid(id)
+      ? supabase
+          .from('generated_content')
+          .select('id, content_type, title, body, keywords, seo_score, tone_match, created_at, updated_at')
+          .eq('id', id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase.from('brand_voice').select('voice').maybeSingle(),
+  ]);
 
   if (!content) {
     return (
       <AppShell width="narrow">
-        <Card className="p-8 text-center sm:p-10">
-          <h1 className="text-2xl font-bold text-gray-900">Content not found</h1>
-          <p className="mt-2 text-muted">
-            This item doesn&apos;t exist, was deleted, or belongs to another account.
-          </p>
-          <Link href="/history" className={`${buttonClasses()} mt-6`}>
-            Back to Draft History
-          </Link>
-        </Card>
+        <PageHeader
+          title="Draft not found"
+          description="This draft doesn't exist, was deleted, or belongs to another account."
+          actions={
+            <Link href="/history" className={buttonClasses()}>
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Draft history
+            </Link>
+          }
+        />
       </AppShell>
     );
   }
 
   return (
     <AppShell width="editor">
-      <Card className="p-8 sm:p-10">
-        {/* key forces a fresh form when navigating between items */}
-        <EditorForm key={content.id} content={content} />
-      </Card>
+      {/* key forces a fresh form when navigating between items */}
+      <EditorForm key={content.id} content={content} voice={brand?.voice ? VOICE_LABELS[brand.voice] : null} />
     </AppShell>
   );
 }
