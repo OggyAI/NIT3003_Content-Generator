@@ -1,6 +1,6 @@
 // Owner: Oggy. Labels and date text shared by the dashboard, history and editor,
 // so every screen names formats and voices the same way.
-import type { BrandVoiceOption, ContentType } from '@/lib/types';
+import type { BrandVoiceOption, ContentType, Platform } from '@/lib/types';
 
 // Named after what the prompt builder actually writes for each type
 export const FORMAT_LABELS: Record<ContentType, string> = {
@@ -8,6 +8,18 @@ export const FORMAT_LABELS: Record<ContentType, string> = {
   social: 'Social post',
   email: 'Email newsletter',
 };
+
+// Format and platform choices, in the order Generate and Settings show them
+export const FORMAT_OPTIONS: { value: ContentType; description: string }[] = [
+  { value: 'social', description: 'An Instagram caption or Facebook post' },
+  { value: 'blog', description: 'A title, intro and section headings' },
+  { value: 'email', description: 'Subject line ideas and a short email' },
+];
+
+export const PLATFORM_OPTIONS: { value: Platform; label: string; description: string }[] = [
+  { value: 'instagram', label: 'Instagram', description: 'Short caption with hashtags' },
+  { value: 'facebook', label: 'Facebook', description: 'A few short paragraphs' },
+];
 
 export const VOICE_LABELS: Record<BrandVoiceOption, string> = {
   professional: 'Professional',

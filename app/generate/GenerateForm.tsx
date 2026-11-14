@@ -13,20 +13,9 @@ import Textarea from '@/components/ui/Textarea';
 import SelectableCard from '@/components/ui/SelectableCard';
 import Badge from '@/components/ui/Badge';
 import { AlertIcon, CheckIcon, CopyIcon, PlusIcon, RefreshIcon, SparkleIcon } from '@/components/icons';
-import { FORMAT_LABELS } from '@/lib/display';
+import { FORMAT_LABELS, FORMAT_OPTIONS as TYPES, PLATFORM_OPTIONS as PLATFORMS } from '@/lib/display';
 import { KEYWORD_MAX, MAX_KEYWORDS, REQUEST_MAX, REQUEST_MIN } from '@/lib/validation';
 import type { ContentType, GenerateResponse, GenerationFailureReason, Platform } from '@/lib/types';
-
-const TYPES: { value: ContentType; description: string }[] = [
-  { value: 'social', description: 'An Instagram caption or Facebook post' },
-  { value: 'blog', description: 'A title, intro and section headings' },
-  { value: 'email', description: 'Subject line ideas and a short email' },
-];
-
-const PLATFORMS: { value: Platform; label: string; description: string }[] = [
-  { value: 'instagram', label: 'Instagram', description: 'Short caption with hashtags' },
-  { value: 'facebook', label: 'Facebook', description: 'A few short paragraphs' },
-];
 
 const PLACEHOLDERS: Record<ContentType, string> = {
   blog: 'e.g. Why locally roasted coffee tastes better',
@@ -99,9 +88,16 @@ type Result = {
 
 type Pending = 'generate' | 'regenerate' | null;
 
-export default function GenerateForm({ voice }: { voice: string | null }) {
-  const [contentType, setContentType] = useState<ContentType>('social');
-  const [platform, setPlatform] = useState<Platform>('instagram');
+type GenerateFormProps = {
+  voice: string | null;
+  /** Starting format and platform from Settings › Content defaults (null = Social post / Instagram) */
+  initialType?: ContentType | null;
+  initialPlatform?: Platform | null;
+};
+
+export default function GenerateForm({ voice, initialType, initialPlatform }: GenerateFormProps) {
+  const [contentType, setContentType] = useState<ContentType>(initialType ?? 'social');
+  const [platform, setPlatform] = useState<Platform>(initialPlatform ?? 'instagram');
   const [request, setRequest] = useState('');
   const [keywords, setKeywords] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ request?: string; keywords?: string }>({});

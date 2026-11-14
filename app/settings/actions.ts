@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
-import type { Database } from '@/lib/types';
+import type { ContentType, Database, Platform } from '@/lib/types';
 import { validateEmail, validateNewPassword } from '@/app/(auth)/validation';
 
 type Client = SupabaseClient<Database>;
@@ -132,4 +132,35 @@ export async function changeEmail(_prev: EmailState, formData: FormData): Promis
       ? `We've sent a confirmation link to ${newEmail}. Your email changes once you click it.`
       : `Your email is now ${newEmail}. Use it next time you log in.`,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Content defaults (migration 002): the format and platform Generate starts on
+
+export type DefaultsState = { formError?: string; savedAt?: number };
+
+const CONTENT_TYPES: ContentType[] = ['social', 'blog', 'email'];
+const PLATFORMS: Platform[] = ['instagram', 'facebook'];
+
+export async function saveDefaults(_prev: DefaultsState, formData: FormData): Promise<DefaultsState> {
+  const type = String(formData.get('contentType') ?? '') as ContentType;
+  const platform = String(formData.get('platform') ?? '') as Platform;
+  if (!CONTENT_TYPES.includes(type)) return { formError: 'Choose a format.' };
+  // A platform only applies to social posts
+  const defaultPlatform = type === 'social' ? (PLATFORMS.includes(platform) ? platform : 'instagram') : null;
+
+  const { supabase, userId } = await signedIn();
+  const { data, error } = await supabase
+    .from('business_profile')
+    .update({ default_content_type: type, default_platform: defaultPlatform })
+    .eq('owner_id', userId)
+    .select('id');
+  if (error || !data?.length) {
+    console.error('[settings] saving defaults failed:', error?.message ?? 'no business row');
+    return { formError: "We couldn't save your defaults. Try again in a moment." };
+  }
+
+  revalidatePath('/generate');
+  revalidatePath('/settings');
+  return { savedAt: Date.now() };
 }

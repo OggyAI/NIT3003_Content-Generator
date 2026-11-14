@@ -7,10 +7,20 @@ import { useActionState, useState } from 'react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
+import SelectableCard from '@/components/ui/SelectableCard';
 import { AlertIcon, CheckIcon } from '@/components/icons';
 import { PASSWORD_RULES, validateNewPassword } from '@/app/(auth)/validation';
 import { fieldErrorClass, inputClass, labelClass, ruleClass, toggleClass } from '@/app/(auth)/ui';
-import { changeEmail, changePassword, type EmailState, type PasswordState } from './actions';
+import { FORMAT_LABELS, FORMAT_OPTIONS, PLATFORM_OPTIONS } from '@/lib/display';
+import type { ContentType, Platform } from '@/lib/types';
+import {
+  changeEmail,
+  changePassword,
+  saveDefaults,
+  type DefaultsState,
+  type EmailState,
+  type PasswordState,
+} from './actions';
 
 // ---- Shared pieces ----
 
@@ -251,6 +261,91 @@ export function EmailCard({ email }: { email: string }) {
             <SuccessLine text={!pending && state.savedAt ? (state.message ?? 'Email changed.') : null} />
           </div>
         </form>
+      </section>
+    </Card>
+  );
+}
+
+// ---- Content defaults ----
+
+export function DefaultsCard({
+  initialType,
+  initialPlatform,
+  ready,
+}: {
+  initialType: ContentType | null;
+  initialPlatform: Platform | null;
+  /** false until migration 002 has been run on the database */
+  ready: boolean;
+}) {
+  const [state, formAction, pending] = useActionState(saveDefaults, {} as DefaultsState);
+  const [type, setType] = useState<ContentType>(initialType ?? 'social');
+  const [platform, setPlatform] = useState<Platform>(initialPlatform ?? 'instagram');
+
+  // What's saved now, so the "Saved" message disappears as soon as the choice changes
+  const [saved, setSaved] = useState({ type, platform });
+  const [handled, setHandled] = useState(state);
+  if (state !== handled) {
+    setHandled(state);
+    if (state.savedAt) setSaved({ type, platform });
+  }
+  const unchanged = type === saved.type && (type !== 'social' || platform === saved.platform);
+
+  return (
+    <Card>
+      <section aria-labelledby="defaults-heading" className="@container flex flex-col gap-4">
+        <CardHeading
+          id="defaults-heading"
+          title="Content defaults"
+          text="What Create content starts on. You can still pick something else each time."
+        />
+        {!ready ? (
+          <p className="rounded-control border border-amber-200 bg-warning-light p-3 text-sm text-amber-900">
+            Content defaults aren&apos;t available yet: the database needs a small update first.
+          </p>
+        ) : (
+          <form action={formAction} className="flex flex-col gap-4">
+            <input type="hidden" name="contentType" value={type} />
+            <input type="hidden" name="platform" value={platform} />
+            <fieldset className="min-w-0">
+              <legend className="mb-2 text-sm font-medium text-ink">Format</legend>
+              <div className="grid grid-cols-1 gap-3 @xl:grid-cols-3">
+                {FORMAT_OPTIONS.map((t) => (
+                  <SelectableCard
+                    key={t.value}
+                    label={FORMAT_LABELS[t.value]}
+                    description={t.description}
+                    selected={type === t.value}
+                    onSelect={() => setType(t.value)}
+                  />
+                ))}
+              </div>
+            </fieldset>
+            {type === 'social' && (
+              <fieldset className="min-w-0">
+                <legend className="mb-2 text-sm font-medium text-ink">Platform</legend>
+                <div className="grid grid-cols-1 gap-3 @sm:grid-cols-2">
+                  {PLATFORM_OPTIONS.map((p) => (
+                    <SelectableCard
+                      key={p.value}
+                      label={p.label}
+                      description={p.description}
+                      selected={platform === p.value}
+                      onSelect={() => setPlatform(p.value)}
+                    />
+                  ))}
+                </div>
+              </fieldset>
+            )}
+            <FormError text={state.formError} />
+            <div className="flex flex-wrap items-center gap-3">
+              <Button type="submit" variant="secondary" loading={pending}>
+                {pending ? 'Saving…' : 'Save defaults'}
+              </Button>
+              <SuccessLine text={!pending && state.savedAt && unchanged ? 'Defaults saved.' : null} />
+            </div>
+          </form>
+        )}
       </section>
     </Card>
   );
