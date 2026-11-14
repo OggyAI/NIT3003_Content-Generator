@@ -146,7 +146,7 @@ export default function ProfileForm({ initial }: { initial: ProfileFields }) {
           ) : (
             <p className="text-sm text-muted">No products or services added yet.</p>
           )}
-          <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
             <Input
               label="Product or service name"
               placeholder="e.g. Haircut"
