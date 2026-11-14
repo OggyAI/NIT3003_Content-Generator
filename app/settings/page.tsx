@@ -1,20 +1,26 @@
-// Owner: Oggy. Settings (Phase 2 of the UI overhaul): change password, change email,
-// default content preferences and delete account.
-// For now this is a placeholder so the sidebar's Settings link never 404s.
-// It's in PROTECTED in proxy.ts, so logged-out users are sent to /login.
+// Owner: Oggy. Settings (UI overhaul Phase 2, plan approved by Karma 14 Nov 2026):
+// change password, change email, content defaults and delete account.
+// In PROTECTED (proxy.ts), so logged-out users are sent to /login first.
+import { redirect } from 'next/navigation';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/ui/PageHeader';
-import EmptyState from '@/components/ui/EmptyState';
+import { createClient } from '@/lib/supabase/server';
+import { EmailCard, PasswordCard } from './SettingsForms';
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) redirect('/login?next=/settings');
+
   return (
     <AppShell width="narrow">
       <div className="flex flex-col gap-6">
-        <PageHeader title="Settings" description="Manage your account and content defaults." />
-        <EmptyState
-          title="Settings are on the way"
-          text="Soon you'll be able to change your password and email address, and choose the content type you start with."
-        />
+        <PageHeader title="Settings" description="Manage your login, content defaults and account." />
+        <PasswordCard />
+        {/* key: remount with empty boxes after the email changes */}
+        <EmailCard key={user.email} email={user.email} />
       </div>
     </AppShell>
   );
