@@ -164,3 +164,39 @@ export async function saveDefaults(_prev: DefaultsState, formData: FormData): Pr
   revalidatePath('/settings');
   return { savedAt: Date.now() };
 }
+
+// ---------------------------------------------------------------------------
+// Delete account (migration 002: delete_my_account() can only delete the caller).
+// Deleting the auth user cascades to the business profile, products, audience,
+// voice, requests and every draft, all in one transaction.
+
+export type DeleteState = { fieldErrors?: { confirmName?: string; current?: string }; formError?: string };
+
+export async function deleteAccount(_prev: DeleteState, formData: FormData): Promise<DeleteState> {
+  const confirmName = String(formData.get('confirmName') ?? '').trim();
+  const current = String(formData.get('current') ?? '');
+
+  const { supabase, email } = await signedIn();
+  const { data: business } = await supabase.from('business_profile').select('business_name').maybeSingle();
+  const name = business?.business_name?.trim() ?? '';
+
+  const fieldErrors: NonNullable<DeleteState['fieldErrors']> = {};
+  if (!name || confirmName.toLowerCase() !== name.toLowerCase()) {
+    fieldErrors.confirmName = name ? `Type ${name} to confirm.` : 'Type your business name to confirm.';
+  }
+  if (!current) fieldErrors.current = 'Enter your current password.';
+  if (hasErrors(fieldErrors)) return { fieldErrors };
+
+  const wrong = await checkCurrentPassword(supabase, email, current);
+  if (wrong) return { fieldErrors: { current: wrong } };
+
+  const { error } = await supabase.rpc('delete_my_account');
+  if (error) {
+    console.error('[settings] delete_my_account failed:', error.code ?? error.message);
+    return { formError: "We couldn't delete your account, so nothing was deleted. Try again in a moment." };
+  }
+
+  // The user no longer exists; this clears the session cookies (errors are expected and ignored)
+  await supabase.auth.signOut();
+  redirect('/login?deleted=1');
+}

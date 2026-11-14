@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/ui/PageHeader';
 import { createClient } from '@/lib/supabase/server';
-import { DefaultsCard, EmailCard, PasswordCard } from './SettingsForms';
+import { DefaultsCard, DeleteAccountCard, EmailCard, PasswordCard } from './SettingsForms';
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -16,10 +16,10 @@ export default async function SettingsPage() {
 
   // RLS returns only this user's business. The defaults columns come from migration 002;
   // until it has been run, that read fails and the defaults card says so.
-  const prefs = await supabase
-    .from('business_profile')
-    .select('default_content_type, default_platform')
-    .maybeSingle();
+  const [prefs, business] = await Promise.all([
+    supabase.from('business_profile').select('default_content_type, default_platform').maybeSingle(),
+    supabase.from('business_profile').select('business_name').maybeSingle(),
+  ]);
 
   return (
     <AppShell width="narrow">
@@ -33,6 +33,7 @@ export default async function SettingsPage() {
           initialType={prefs.data?.default_content_type ?? null}
           initialPlatform={prefs.data?.default_platform ?? null}
         />
+        <DeleteAccountCard businessName={business.data?.business_name ?? ''} />
       </div>
     </AppShell>
   );

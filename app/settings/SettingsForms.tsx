@@ -8,7 +8,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import SelectableCard from '@/components/ui/SelectableCard';
-import { AlertIcon, CheckIcon } from '@/components/icons';
+import { AlertIcon, CheckIcon, TrashIcon } from '@/components/icons';
 import { PASSWORD_RULES, validateNewPassword } from '@/app/(auth)/validation';
 import { fieldErrorClass, inputClass, labelClass, ruleClass, toggleClass } from '@/app/(auth)/ui';
 import { FORMAT_LABELS, FORMAT_OPTIONS, PLATFORM_OPTIONS } from '@/lib/display';
@@ -16,8 +16,10 @@ import type { ContentType, Platform } from '@/lib/types';
 import {
   changeEmail,
   changePassword,
+  deleteAccount,
   saveDefaults,
   type DefaultsState,
+  type DeleteState,
   type EmailState,
   type PasswordState,
 } from './actions';
@@ -344,6 +346,77 @@ export function DefaultsCard({
               </Button>
               <SuccessLine text={!pending && state.savedAt && unchanged ? 'Defaults saved.' : null} />
             </div>
+          </form>
+        )}
+      </section>
+    </Card>
+  );
+}
+
+// ---- Delete account (danger zone) ----
+
+export function DeleteAccountCard({ businessName }: { businessName: string }) {
+  const [state, formAction, pending] = useActionState(deleteAccount, {} as DeleteState);
+  const [open, setOpen] = useState(false);
+  const [confirmName, setConfirmName] = useState('');
+  const errors = state.fieldErrors ?? {};
+  const name = businessName.trim();
+  const matches = name !== '' && confirmName.trim().toLowerCase() === name.toLowerCase();
+
+  function openConfirm() {
+    setOpen(true);
+    setTimeout(() => document.getElementById('delete-confirm-name')?.focus(), 0);
+  }
+
+  function cancel() {
+    setOpen(false);
+    setConfirmName('');
+    setTimeout(() => document.getElementById('delete-open')?.focus(), 0);
+  }
+
+  return (
+    <Card className="border-danger/30">
+      <section aria-labelledby="delete-heading" className="flex flex-col gap-4">
+        <CardHeading
+          id="delete-heading"
+          title="Delete account"
+          text="Permanently deletes your login, your business profile and every draft. This can't be undone."
+        />
+        {!open ? (
+          <Button id="delete-open" variant="danger-ghost" onClick={openConfirm} className="self-start">
+            <TrashIcon className="h-4 w-4" />
+            Delete account…
+          </Button>
+        ) : (
+          <form action={formAction} noValidate className="flex flex-col gap-4">
+            <Input
+              id="delete-confirm-name"
+              name="confirmName"
+              label={name ? `Type ${name} to confirm` : 'Type your business name to confirm'}
+              autoComplete="off"
+              value={confirmName}
+              onChange={(e) => setConfirmName(e.target.value)}
+              error={errors.confirmName}
+            />
+            <PasswordField
+              id="delete-current"
+              name="current"
+              label="Current password"
+              autoComplete="current-password"
+              error={errors.current}
+            />
+            <FormError text={state.formError} />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="submit" variant="danger" loading={pending} disabled={!matches}>
+                {pending ? 'Deleting…' : 'Permanently delete account'}
+              </Button>
+              <Button variant="ghost" onClick={cancel} disabled={pending}>
+                Cancel
+              </Button>
+            </div>
+            {!matches && (
+              <p className="text-sm text-muted">The delete button turns on once the business name matches.</p>
+            )}
           </form>
         )}
       </section>
