@@ -5,6 +5,8 @@
 -- It creates two throwaway users (A and B), acts as each one, checks what
 -- they can see and change, deletes the test users, and finishes with a
 -- results table. Every row should say pass = true.
+-- The admin section (marked below) needs migration 003; the original 14
+-- checks are unchanged.
 -- Screenshot the result for the diary / test plan.
 -- =====================================================================
 
@@ -24,6 +26,8 @@ where owner_id in ('00000000-0000-4000-a000-00000000000a', '00000000-0000-4000-a
 
 select set_config('test.a_business',
   (select id::text from public.business_profile where owner_id = '00000000-0000-4000-a000-00000000000a'), true);
+select set_config('test.b_business',
+  (select id::text from public.business_profile where owner_id = '00000000-0000-4000-a000-00000000000b'), true);
 
 -- ---------------- act as user A ----------------
 set local role authenticated;
@@ -94,6 +98,85 @@ begin
 exception when insufficient_privilege then
   insert into rls_results (test, pass) values ('Logged-out visitor cannot read content', true);
 end $$;
+
+-- ================= Admin functions (migration 003; run 003 first) =================
+
+-- Logged-out visitor
+do $$
+begin
+  perform * from public.admin_business_overview();
+  insert into rls_results (test, pass) values ('Admin: logged-out visitor cannot read the overview', false);
+exception when insufficient_privilege then
+  insert into rls_results (test, pass) values ('Admin: logged-out visitor cannot read the overview', true);
+end $$;
+
+-- Normal user A (no admin role in the token)
+set local role authenticated;
+select set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-4000-a000-00000000000a","role":"authenticated","app_metadata":{}}', true);
+
+insert into rls_results (test, pass) select 'Admin: normal user A is not an admin', public.is_admin() = false;
+
+do $$
+begin
+  perform * from public.admin_business_overview();
+  insert into rls_results (test, pass) values ('Admin: normal user cannot read the overview', false);
+exception when insufficient_privilege then
+  insert into rls_results (test, pass) values ('Admin: normal user cannot read the overview', true);
+end $$;
+
+do $$
+begin
+  perform public.admin_set_account_disabled(current_setting('test.b_business')::uuid, true);
+  insert into rls_results (test, pass) values ('Admin: normal user cannot disable accounts', false);
+exception when insufficient_privilege then
+  insert into rls_results (test, pass) values ('Admin: normal user cannot disable accounts', true);
+end $$;
+
+insert into rls_results (test, pass)
+select 'Admin: normal user A still sees only their own business', count(*) = 1 and bool_and(business_name = 'Cafe A')
+from public.business_profile;
+
+-- A with an admin token (app_metadata.role = admin, as the dashboard SQL would set)
+select set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-4000-a000-00000000000a","role":"authenticated","app_metadata":{"role":"admin"}}', true);
+
+insert into rls_results (test, pass) select 'Admin: admin token is recognised', public.is_admin() = true;
+
+insert into rls_results (test, pass)
+select 'Admin: overview lists both test businesses', count(*) = 2
+from public.admin_business_overview()
+where business_id in (current_setting('test.a_business')::uuid, current_setting('test.b_business')::uuid);
+
+insert into rls_results (test, pass)
+select 'Admin: overview returns no email column',
+       pg_get_function_result('public.admin_business_overview()'::regprocedure) not ilike '%email%';
+
+do $$
+begin
+  perform public.admin_set_account_disabled(current_setting('test.a_business')::uuid, true);
+  insert into rls_results (test, pass) values ('Admin: cannot disable your own account', false);
+exception when insufficient_privilege then
+  insert into rls_results (test, pass) values ('Admin: cannot disable your own account', true);
+end $$;
+
+select public.admin_set_account_disabled(current_setting('test.b_business')::uuid, true);
+
+reset role;
+insert into rls_results (test, pass)
+select 'Admin: disabling B bans B and ends B''s sessions',
+       (select banned_until > now() from auth.users where id = '00000000-0000-4000-a000-00000000000b')
+   and (select count(*) from auth.sessions where user_id = '00000000-0000-4000-a000-00000000000b') = 0;
+
+set local role authenticated;
+select set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-4000-a000-00000000000a","role":"authenticated","app_metadata":{"role":"admin"}}', true);
+select public.admin_set_account_disabled(current_setting('test.b_business')::uuid, false);
+
+reset role;
+insert into rls_results (test, pass)
+select 'Admin: re-enabling B clears the ban', banned_until is null
+from auth.users where id = '00000000-0000-4000-a000-00000000000b';
 
 -- ---------------- back to admin: confirm A's data untouched, clean up ----------------
 reset role;

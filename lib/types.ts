@@ -131,6 +131,10 @@ export type Database = {
       my_business_id: { Args: Record<string, never>; Returns: string | null };
       // Migration 002: deletes the caller's own auth user (data cascades)
       delete_my_account: { Args: Record<string, never>; Returns: undefined };
+      // Migration 003: admin functions (each checks app_metadata.role = 'admin' itself)
+      is_admin: { Args: Record<string, never>; Returns: boolean };
+      admin_business_overview: { Args: Record<string, never>; Returns: AdminBusinessRow[] };
+      admin_set_account_disabled: { Args: { target_business: string; disable: boolean }; Returns: undefined };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
@@ -184,3 +188,19 @@ export type AnalyseResponse = {
 };
 
 export type ContentSaveRequest = { title: string; body: string; keywords: string[] };
+
+/** One row of admin_business_overview() (migration 003): business-level totals only, no personal data */
+export type AdminBusinessRow = {
+  business_id: string;
+  business_name: string;
+  industry: string | null;
+  joined_at: string;
+  draft_count: number;
+  request_count: number;
+  failed_requests: number;
+  /** Average generation_ms of successful requests; null when there are none */
+  avg_generation_ms: number | null;
+  last_active_at: string | null;
+  is_admin: boolean;
+  disabled: boolean;
+};
