@@ -4,6 +4,18 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { resetPassword, type ResetPasswordState } from "./actions";
 import { PASSWORD_RULES, validateNewPassword } from "../validation";
+import {
+  fieldErrorClass,
+  formErrorClass,
+  inputClass,
+  introClass,
+  labelClass,
+  linkClass,
+  ruleClass,
+  submitClass,
+  titleClass,
+  toggleClass,
+} from "../ui";
 
 const initialState: ResetPasswordState = {};
 
@@ -31,11 +43,11 @@ export default function ResetPasswordForm() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-slate-900">Choose a new password</h1>
-      <p className="mt-1 text-sm text-slate-600">You&apos;ll be logged in once it&apos;s saved.</p>
+      <h1 className={titleClass}>Choose a new password</h1>
+      <p className={introClass}>You&apos;ll be logged in once it&apos;s saved.</p>
 
       {state.formError && (
-        <p role="alert" className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <p role="alert" className={formErrorClass}>
           {state.formError}
         </p>
       )}
@@ -43,7 +55,7 @@ export default function ResetPasswordForm() {
       <form action={formAction} onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
         {/* New password */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-800">
+          <label htmlFor="password" className={labelClass}>
             New password
           </label>
           <div className="relative">
@@ -61,12 +73,9 @@ export default function ResetPasswordForm() {
               aria-describedby="password-rules"
               className={inputClass(!!errors.password) + " pr-16"}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword((s) => !s)}
-              className="absolute inset-y-0 right-2 my-auto h-8 px-2 text-sm text-slate-600 hover:text-slate-900"
-            >
+            <button type="button" onClick={() => setShowPassword((s) => !s)} className={toggleClass}>
               {showPassword ? "Hide" : "Show"}
+              <span className="sr-only"> passwords</span>
             </button>
           </div>
 
@@ -75,19 +84,19 @@ export default function ResetPasswordForm() {
             {PASSWORD_RULES.map((rule) => {
               const ok = rule.test(password);
               return (
-                <li key={rule.label} className={ok ? "text-[#15803D]" : "text-slate-500"}>
+                <li key={rule.label} className={ruleClass(ok)}>
                   <span aria-hidden="true">{ok ? "✓" : "○"}</span> {rule.label}
                   <span className="sr-only">{ok ? " (met)" : " (not met)"}</span>
                 </li>
               );
             })}
           </ul>
-          {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+          {errors.password && <p className={fieldErrorClass}>{errors.password}</p>}
         </div>
 
         {/* Confirm new password */}
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-800">
+          <label htmlFor="confirmPassword" className={labelClass}>
             Confirm new password
           </label>
           <input
@@ -105,17 +114,13 @@ export default function ResetPasswordForm() {
             className={inputClass(!!errors.confirmPassword)}
           />
           {errors.confirmPassword && (
-            <p id="confirmPassword-error" className="mt-1 text-sm text-red-600">
+            <p id="confirmPassword-error" className={fieldErrorClass}>
               {errors.confirmPassword}
             </p>
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-md bg-[#1E3A8A] px-4 py-2.5 font-medium text-white hover:bg-[#1E3A8A]/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#14B8A6] focus-visible:ring-offset-2 disabled:opacity-60"
-        >
+        <button type="submit" disabled={pending} aria-busy={pending} className={submitClass}>
           {pending ? "Saving…" : "Save new password"}
         </button>
       </form>
@@ -126,21 +131,13 @@ export default function ResetPasswordForm() {
 export function LinkExpired() {
   return (
     <div role="alert" className="space-y-4">
-      <h1 className="text-2xl font-semibold text-slate-900">Reset link expired</h1>
-      <p className="text-slate-600">
+      <h1 className={titleClass}>Reset link expired</h1>
+      <p className="text-muted">
         This password reset link is invalid or has expired. Links work once and only for an hour.
       </p>
-      <Link href="/forgot-password" className="inline-block font-medium text-[#1E3A8A] underline">
+      <Link href="/forgot-password" className={`inline-block ${linkClass}`}>
         Request a new link
       </Link>
     </div>
   );
-}
-
-function inputClass(hasError: boolean) {
-  return [
-    "mt-1 block w-full rounded-md border px-3 py-2 text-slate-900 shadow-sm",
-    "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#14B8A6]",
-    hasError ? "border-red-500" : "border-field",
-  ].join(" ");
 }
