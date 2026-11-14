@@ -97,17 +97,21 @@ export async function saveProfile(_prev: ProfileState, formData: FormData): Prom
     return { formError: SAVE_FAILED };
   }
 
-  // 5. Products (FR-05): delete the ones removed in the form, insert the new ones
+  // 5. Products (FR-05): delete the ones removed in the form, update the ones edited in
+  //    place, insert the new ones. Only ids already saved for THIS business are updated
+  //    or kept; any other id in the form is treated as a new product.
   const { data: existing, error: listError } = await supabase
     .from("products")
-    .select("id")
+    .select("id, name, description")
     .eq("business_id", businessId);
   if (listError) {
     console.error("products select failed:", listError);
     return { formError: SAVE_FAILED };
   }
 
-  const keepIds = new Set(fields.products.map((p) => p.id).filter(Boolean));
+  const savedById = new Map((existing ?? []).map((p) => [p.id, p]));
+  const isSaved = (p: ProductInput) => Boolean(p.id && savedById.has(p.id));
+  const keepIds = new Set(fields.products.filter(isSaved).map((p) => p.id));
   const removeIds = (existing ?? []).map((p) => p.id).filter((id) => !keepIds.has(id));
   if (removeIds.length > 0) {
     const { error } = await supabase.from("products").delete().eq("business_id", businessId).in("id", removeIds);
@@ -117,7 +121,29 @@ export async function saveProfile(_prev: ProfileState, formData: FormData): Prom
     }
   }
 
-  const newProducts = fields.products.filter((p) => !p.id);
+  const changed = fields.products.filter((p) => {
+    if (!isSaved(p)) return false;
+    const before = savedById.get(p.id!)!;
+    return before.name !== p.name.trim() || (before.description ?? "") !== p.description.trim();
+  });
+  if (changed.length > 0) {
+    const results = await Promise.all(
+      changed.map((p) =>
+        supabase
+          .from("products")
+          .update({ name: p.name.trim(), description: orNull(p.description) })
+          .eq("id", p.id!)
+          .eq("business_id", businessId),
+      ),
+    );
+    const failed = results.find((r) => r.error);
+    if (failed) {
+      console.error("products update failed:", failed.error);
+      return { formError: SAVE_FAILED };
+    }
+  }
+
+  const newProducts = fields.products.filter((p) => !isSaved(p));
   if (newProducts.length > 0) {
     const { error } = await supabase.from("products").insert(
       newProducts.map((p) => ({
