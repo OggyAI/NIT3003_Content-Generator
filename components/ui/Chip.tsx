@@ -8,7 +8,7 @@ type ChipProps = {
 
 export default function Chip({ label, onRemove }: ChipProps) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-line bg-slate-50 py-1 pl-1 pr-3 text-sm">
+    <span className="inline-flex items-center gap-1 rounded-full border border-field bg-slate-50 py-1 pl-1 pr-3 text-sm">
       {onRemove ? (
         <button
           type="button"

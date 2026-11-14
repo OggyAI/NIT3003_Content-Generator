@@ -141,6 +141,6 @@ function inputClass(hasError: boolean) {
   return [
     "mt-1 block w-full rounded-md border px-3 py-2 text-slate-900 shadow-sm",
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#14B8A6]",
-    hasError ? "border-red-500" : "border-slate-300",
+    hasError ? "border-red-500" : "border-field",
   ].join(" ");
 }

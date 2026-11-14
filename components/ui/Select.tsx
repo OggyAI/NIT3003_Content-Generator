@@ -38,7 +38,7 @@ export default function Select({ label, options, placeholder, error, hint, id, c
           className={
             "w-full appearance-none rounded-control border bg-white py-2 pl-3 pr-10 text-sm " +
             "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-navy " +
-            (error ? "border-red-600 " : "border-line ") +
+            (error ? "border-red-600 " : "border-field ") +
             className
           }
           {...startEmpty}

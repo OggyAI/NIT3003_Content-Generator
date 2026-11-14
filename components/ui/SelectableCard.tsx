@@ -16,7 +16,7 @@ export default function SelectableCard({ label, selected, onSelect, className = 
       className={
         "flex min-h-16 items-center justify-center gap-1 rounded-control border-2 px-4 py-3 text-sm font-medium text-gray-900 transition-colors " +
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy " +
-        (selected ? "border-teal-600 bg-teal-light " : "border-line bg-white hover:border-slate-600 ") +
+        (selected ? "border-teal-600 bg-teal-light " : "border-field bg-white hover:border-slate-600 ") +
         className
       }
     >

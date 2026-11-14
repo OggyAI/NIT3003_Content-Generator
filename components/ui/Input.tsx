@@ -30,7 +30,7 @@ export default function Input({ label, error, hint, id, className = "", ...rest 
         className={
           "rounded-control border bg-white px-3 py-2 text-sm placeholder:text-muted " +
           "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-navy " +
-          (error ? "border-red-600 " : "border-line ") +
+          (error ? "border-red-600 " : "border-field ") +
           className
         }
         {...rest}

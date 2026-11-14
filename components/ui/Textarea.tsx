@@ -30,7 +30,7 @@ export default function Textarea({ label, error, hint, id, rows = 8, className =
         className={
           "resize-y rounded-control border bg-white px-3 py-2 text-sm leading-6 placeholder:text-muted " +
           "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-navy " +
-          (error ? "border-red-600 " : "border-line ") +
+          (error ? "border-red-600 " : "border-field ") +
           className
         }
         {...rest}

@@ -1,28 +1,50 @@
 @import "tailwindcss";
 
-/* Design tokens from our Figma */
+/* Design tokens: navy + teal from our Figma, refreshed for the UI overhaul (CLAUDE.md §3) */
 @theme {
   --color-navy: #1E3A8A;
   --color-navy-dark: #172E6E;
-  --color-teal: #14B8A6;
+  --color-navy-50: #EEF2FB;
+  --color-navy-100: #DCE4F6;
+  --color-teal: #14B8A6; /* accent fills only: 2.5:1 on white, so never text or icons */
   --color-teal-light: #CCFBF1;
   --color-success: #22C55E;
   --color-success-light: #DCFCE7;
   --color-warning: #F59E0B;
   --color-warning-light: #FEF3C7;
-  --color-page: #F8FAFC;
-  --color-muted: #6B7280;
-  --color-line: #878E9C;
+  --color-danger: #B91C1C;
+  --color-danger-light: #FEE2E2;
+  --color-page: #F6F8FC;
+  --color-ink: #0F172A;
+  --color-muted: #5E6B7F;
+  --color-field: #878E9C; /* every form-control border: 3.3:1 on white (WCAG 1.4.11) */
+  --color-line: #E3E8F0; /* decorative dividers and card borders only */
 
-  --radius-control: 8px;
+  --radius-control: 12px;
   --radius-card: 16px;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(30 58 138 / 0.14);
 }
 
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-body {
-  background: var(--color-page);
-  color: #111827;
+@layer base {
+  body {
+    background: var(--color-page);
+    color: var(--color-ink);
+  }
+}
+
+/* Respect the "reduce motion" OS setting */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

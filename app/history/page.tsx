@@ -64,7 +64,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: Prom
                 aria-current={active ? 'page' : undefined}
                 className={
                   'rounded-full border px-4 py-1 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy ' +
-                  (active ? 'border-teal bg-teal-light text-gray-900' : 'border-line bg-white text-gray-700 hover:border-slate-400')
+                  (active ? 'border-teal bg-teal-light text-gray-900' : 'border-field bg-white text-gray-700 hover:border-slate-400')
                 }
               >
                 {f.label}
