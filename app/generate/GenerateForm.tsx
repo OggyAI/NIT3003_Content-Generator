@@ -16,7 +16,7 @@ import Badge from '@/components/ui/Badge';
 import { AlertIcon, CheckIcon, CopyIcon, PlusIcon, RefreshIcon, SparkleIcon } from '@/components/icons';
 import { FORMAT_LABELS, FORMAT_OPTIONS as TYPES, PLATFORM_OPTIONS as PLATFORMS } from '@/lib/display';
 import { KEYWORD_MAX, MAX_KEYWORDS, REQUEST_MAX, REQUEST_MIN } from '@/lib/validation';
-import type { ContentType, GenerateResponse, GenerationFailureReason, Platform } from '@/lib/types';
+import type { ContentType, GenerateResponse, GenerationFailureReason, Plan, Platform } from '@/lib/types';
 
 const PLACEHOLDERS: Record<ContentType, string> = {
   blog: 'e.g. Why locally roasted coffee tastes better',
@@ -63,6 +63,17 @@ function failureFrom(data: Extract<GenerateResponse, { error: string }>): Failur
         retry: false,
         link: { href: '/profile', label: 'Go to business profile' },
       };
+    case 'limit_reached':
+      return data.plan === 'pro'
+        ? {
+            message: `You've used all ${data.limit} generations included in Pro this month. Your request is still here; generating opens again on the 1st.`,
+            retry: false,
+          }
+        : {
+            message: `You've used all ${data.limit} free generations this month. Your request is still here, so upgrade to Pro to keep going, or come back on the 1st.`,
+            retry: false,
+            link: { href: '/settings#billing', label: 'See Pro' },
+          };
     case 'unauthorised':
       return {
         message: 'Your session has ended. Log in again to continue.',
@@ -94,9 +105,12 @@ type GenerateFormProps = {
   /** Starting format and platform from Settings › Content defaults (null = Social post / Instagram) */
   initialType?: ContentType | null;
   initialPlatform?: Platform | null;
+  /** This month's usage (migration 004); null when it can't be read, then no usage line shows */
+  usage?: { plan: Plan; used: number; limit: number } | null;
 };
 
-export default function GenerateForm({ voice, initialType, initialPlatform }: GenerateFormProps) {
+export default function GenerateForm({ voice, initialType, initialPlatform, usage }: GenerateFormProps) {
+  const [used, setUsed] = useState(usage?.used ?? 0);
   const [contentType, setContentType] = useState<ContentType>(initialType ?? 'social');
   const [platform, setPlatform] = useState<Platform>(initialPlatform ?? 'instagram');
   const [request, setRequest] = useState('');
@@ -162,8 +176,10 @@ export default function GenerateForm({ voice, initialType, initialPlatform }: Ge
         setFailure(res.status === 504 ? REASON_TEXT.timeout : REASON_TEXT.unknown);
       } else if ('error' in data) {
         setFailure(failureFrom(data));
+        if (data.error === 'limit_reached' && typeof data.used === 'number') setUsed(data.used);
       } else {
         setResult({ ...data, contentType, platform: sentPlatform });
+        setUsed((u) => u + 1);
       }
     } catch {
       setFailure(NETWORK_FAILURE);
@@ -358,6 +374,12 @@ export default function GenerateForm({ voice, initialType, initialPlatform }: Ge
         <p role="status" aria-live="polite" className="text-sm text-muted">
           {pending === 'generate' ? `Writing your draft in ${voiceText}. This usually takes a few seconds.` : ''}
         </p>
+        {/* Free plan only, and quiet: the brief and the button stay the focus */}
+        {usage?.plan === 'free' && pending !== 'generate' && (
+          <p className="text-sm text-muted sm:ml-auto">
+            {Math.min(used, usage.limit)} of {usage.limit} free generations used this month
+          </p>
+        )}
       </div>
     </form>
   );

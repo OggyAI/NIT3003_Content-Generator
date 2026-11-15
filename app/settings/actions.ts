@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
+import { getStripe } from '@/lib/billing';
 import type { ContentType, Database, Platform } from '@/lib/types';
 import { validateEmail, validateNewPassword } from '@/app/(auth)/validation';
 
@@ -189,6 +190,21 @@ export async function deleteAccount(_prev: DeleteState, formData: FormData): Pro
 
   const wrong = await checkCurrentPassword(supabase, email, current);
   if (wrong) return { fieldErrors: { current: wrong } };
+
+  // A paid subscription would keep charging after the account is gone, so cancel it first.
+  // If Stripe can't be reached, stop here and delete nothing.
+  const { data: sub } = await supabase.from('subscriptions').select('stripe_subscription_id, status').maybeSingle();
+  if (sub?.stripe_subscription_id && !['canceled', 'incomplete_expired'].includes(sub.status)) {
+    try {
+      await getStripe().subscriptions.cancel(sub.stripe_subscription_id);
+    } catch (err) {
+      console.error('[settings] could not cancel subscription:', err instanceof Error ? err.message : 'unknown');
+      return {
+        formError:
+          "We couldn't cancel your Pro subscription, so nothing was deleted. Try again in a moment, or cancel it under Plan and billing first.",
+      };
+    }
+  }
 
   const { error } = await supabase.rpc('delete_my_account');
   if (error) {
